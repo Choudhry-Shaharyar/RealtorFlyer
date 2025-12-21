@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import Link from "next/link"
 import { LoginForm } from "@/components/auth/login-form"
+import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata: Metadata = {
@@ -8,7 +9,13 @@ export const metadata: Metadata = {
     description: "Sign in to your account",
 }
 
-export default function LoginPage() {
+export default function LoginPage({
+    searchParams,
+}: {
+    searchParams: { [key: string]: string | string[] | undefined }
+}) {
+    const view = searchParams.view
+
     return (
         <div className="container relative flex h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
@@ -19,9 +26,9 @@ export default function LoginPage() {
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">
                         <p className="text-lg">
-                            &ldquo;This library has saved me countless hours of work and helped me deliver stunning designs to my clients faster than ever before.&rdquo;
+                            &ldquo;RealtorFlyer has transformed how I market my listings. I can now generate professional open house flyers in minutes instead of hours.&rdquo;
                         </p>
-                        <footer className="text-sm">Sofia Davis, Real Estate Agent</footer>
+                        <footer className="text-sm">Sarah Jenkins, RE/MAX Top Producer</footer>
                     </blockquote>
                 </div>
             </div>
@@ -29,24 +36,30 @@ export default function LoginPage() {
                 <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
                     <Card className="border-none shadow-none">
                         <CardHeader className="text-center">
-                            <CardTitle className="text-2xl font-bold text-brand-navy">Welcome back</CardTitle>
+                            <CardTitle className="text-2xl font-bold text-brand-navy">
+                                {view === 'forgot_password' ? 'Reset Password' : 'Log in to RealtorFlyer'}
+                            </CardTitle>
                             <CardDescription>
-                                Sign in to your account to continue
+                                {view === 'forgot_password'
+                                    ? "Enter your email to reset your password"
+                                    : "Sign in to your account to continue"}
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <LoginForm />
-                            <p className="px-8 text-center text-sm text-muted-foreground mt-4">
-                                By clicking continue, you agree to our{" "}
-                                <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
-                                    Terms of Service
-                                </Link>{" "}
-                                and{" "}
-                                <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
-                                    Privacy Policy
-                                </Link>
-                                .
-                            </p>
+                            {view === 'forgot_password' ? <ForgotPasswordForm /> : <LoginForm />}
+                            {view !== 'forgot_password' && (
+                                <p className="px-8 text-center text-sm text-muted-foreground mt-4">
+                                    By clicking continue, you agree to our{" "}
+                                    <Link href="/terms" className="underline underline-offset-4 hover:text-primary">
+                                        Terms of Service
+                                    </Link>{" "}
+                                    and{" "}
+                                    <Link href="/privacy" className="underline underline-offset-4 hover:text-primary">
+                                        Privacy Policy
+                                    </Link>
+                                    .
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                 </div>

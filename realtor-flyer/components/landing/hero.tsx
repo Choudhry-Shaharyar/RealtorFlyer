@@ -2,15 +2,94 @@
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+
+const CAROUSEL_IMAGES = [
+    {
+        src: "https://images.unsplash.com/photo-1600596542815-e495d91bae32?q=80&w=1600&auto=format&fit=crop",
+        alt: "Luxury Modern Home",
+        caption: "Modern Luxury Flyers"
+    },
+    {
+        src: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=1600&auto=format&fit=crop",
+        alt: "Spacious Interior",
+        caption: "Open House Announcements"
+    },
+    {
+        src: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=1600&auto=format&fit=crop",
+        alt: "Backyard Pool",
+        caption: "Just Listed Property"
+    }
+]
+
+function Carousel() {
+    const [current, setCurrent] = useState(0)
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrent((prev) => (prev + 1) % CAROUSEL_IMAGES.length)
+        }, 5000)
+        return () => clearInterval(timer)
+    }, [])
+
+    const next = () => setCurrent((prev) => (prev + 1) % CAROUSEL_IMAGES.length)
+    const prev = () => setCurrent((prev) => (prev - 1 + CAROUSEL_IMAGES.length) % CAROUSEL_IMAGES.length)
+
+    return (
+        <div className="relative w-full h-full">
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={current}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="absolute inset-0"
+                >
+                    <Image
+                        src={CAROUSEL_IMAGES[current].src}
+                        alt={CAROUSEL_IMAGES[current].alt}
+                        fill
+                        className="object-cover"
+                        priority
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+                        <h3 className="text-white text-2xl font-bold">{CAROUSEL_IMAGES[current].caption}</h3>
+                    </div>
+                </motion.div>
+            </AnimatePresence>
+
+            <div className="absolute inset-0 flex items-center justify-between p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" onClick={prev} className="bg-black/20 hover:bg-black/40 text-white rounded-full">
+                    <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={next} className="bg-black/20 hover:bg-black/40 text-white rounded-full">
+                    <ChevronRight className="h-6 w-6" />
+                </Button>
+            </div>
+
+            <div className="absolute bottom-4 right-4 flex gap-2">
+                {CAROUSEL_IMAGES.map((_, idx) => (
+                    <div
+                        key={idx}
+                        className={`h-2 w-2 rounded-full transition-all ${idx === current ? 'bg-white w-4' : 'bg-white/50'}`}
+                    />
+                ))}
+            </div>
+        </div>
+    )
+}
 
 export function Hero() {
     return (
-        <section className="relative overflow-hidden pt-20 pb-32 md:pt-32">
+        <section className="relative overflow-hidden pt-10 pb-32 md:pt-12">
+            <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-navy-light/10 via-background to-background" />
             <div className="container px-4 md:px-6">
-                <div className="flex flex-col items-center space-y-8 text-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-navy-light/10 via-background to-background">
+                <div className="flex flex-col items-center space-y-8 text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -26,11 +105,11 @@ export function Hero() {
                             </Badge>
                         </div>
                         <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-brand-navy">
-                            Create Stunning <br className="hidden md:inline" />
-                            Real Estate Posts in <span className="text-brand-gold">60 Seconds</span>
+                            Create Professional <br className="hidden md:inline" />
+                            Real Estate Flyers in <span className="text-brand-gold">Seconds</span>
                         </h1>
                         <p className="text-xl text-muted-foreground max-w-[42rem] mx-auto">
-                            Professional social media flyers that sell homes. No design skills needed. Just enter the address and let AI do the rest.
+                            The AI-powered real estate flyer generator trusted by 500+ Canadian realtors. No design skills needed. Just enter the address and let AI do the rest.
                         </p>
                     </motion.div>
                     <motion.div
@@ -41,7 +120,7 @@ export function Hero() {
                     >
                         <Link href="/login">
                             <Button size="lg" className="h-12 px-8 text-lg font-semibold bg-brand-gold hover:bg-brand-gold-light text-brand-navy">
-                                Start Free — 3 Flyers on Us
+                                Start Free Trial - Create Your First Flyer
                             </Button>
                         </Link>
                         <Link href="#examples">
@@ -57,14 +136,9 @@ export function Hero() {
                         transition={{ duration: 0.8, delay: 0.4 }}
                         className="relative mt-16 w-full max-w-5xl rounded-xl border bg-background p-2 shadow-2xl"
                     >
-                        {/* Placeholder for Hero Image */}
-                        <div className="aspect-[16/9] w-full bg-slate-100 rounded-lg flex items-center justify-center overflow-hidden relative">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-brand-navy/20 to-transparent z-10" />
-                            <p className="text-muted-foreground text-lg italic">Hero Mockup / Carousel Placeholder</p>
-                            {/* 
-                 TODO: Add an actual image here using standard next/image 
-                 <Image src="/images/hero-mockup.png" alt="RealtorFlyer Application Mockup" fill className="object-cover" />
-               */}
+                        {/* Hero Carousel */}
+                        <div className="aspect-[16/9] w-full bg-slate-900 rounded-lg flex items-center justify-center overflow-hidden relative group">
+                            <Carousel />
                         </div>
                     </motion.div>
                 </div>

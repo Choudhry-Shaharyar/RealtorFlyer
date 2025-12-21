@@ -50,10 +50,10 @@ export function Pricing() {
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-navy">
-                        Simple, Transparent Pricing
+                        Real Estate Flyer Generator Pricing for Canadian Agents
                     </h2>
                     <p className="max-w-[600px] text-muted-foreground text-lg">
-                        Start for free. Upgrade as  your business grows.
+                        Save $500/month on design work. Start for free today.
                     </p>
 
                     <Tabs defaultValue="monthly" className="w-[400px] flex justify-center mt-6" onValueChange={(v) => setPeriod(v as "monthly" | "yearly")}>

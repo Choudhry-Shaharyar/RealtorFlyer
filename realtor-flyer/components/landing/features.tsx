@@ -1,37 +1,27 @@
-import { Palette, Maximize, Zap, Image as ImageIcon, Tag, CalendarClock } from "lucide-react"
+import { Palette, Maximize, Zap, Image as ImageIcon, Tag, CalendarClock, Clock } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const features = [
     {
-        title: "Multiple Templates",
-        description: "Modern, Luxury, Classic, Minimalist — find your style that matches your brand.",
-        icon: Palette,
-    },
-    {
-        title: "Every Social Size",
-        description: "Instagram Square, Stories, Facebook, LinkedIn, Twitter — all generated instantly.",
-        icon: Maximize,
-    },
-    {
-        title: "60-Second Generation",
-        description: "AI creates your flyer while you grab coffee. No more hours in Canva.",
+        title: "AI-Powered Real Estate Flyer Design",
+        description: "Our AI generates professional property flyers that rival agency-designed templates. Perfect for real estate agents who need stunning marketing materials instantly.",
         icon: Zap,
     },
     {
-        title: "Your Branding",
-        description: "Your photo, colors, and agency logo automatically applied to every post.",
-        icon: ImageIcon,
+        title: "Save Time on Real Estate Marketing",
+        description: "Create real estate listing flyers in under 2 minutes. Spend less time designing, more time selling properties.",
+        icon: Clock,
     },
     {
-        title: "Price Drops That Pop",
-        description: "Specialized templates for price reductions, sold listings, and open houses.",
-        icon: Tag,
+        title: "Professional Real Estate Branding",
+        description: "Customize with your realtor branding, agent portrait, and company colors. Consistency across all your property marketing materials.",
+        icon: Palette,
     },
-    {
-        title: "Open House Ready",
-        description: "Date and time overlays included seamlessly in the design.",
-        icon: CalendarClock,
-    },
+    // {
+    //     title: "Real Estate Flyer Templates Built-In",
+    //     description: "Choose from professional real estate listing flyer templates optimized for Instagram, Facebook, and LinkedIn.",
+    //     icon: ImageIcon,
+    // },
 ]
 
 export function Features() {
@@ -40,10 +30,10 @@ export function Features() {
             <div className="container px-4 md:px-6">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-navy">
-                        Everything You Need to Stand Out
+                        Why Canadian Realtors Choose RealtorFlyer
                     </h2>
                     <p className="max-w-[900px] text-muted-foreground text-lg">
-                        Powerful tools designed specifically for real estate professionals.
+                        The best real estate marketing software for Canadian agents.
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

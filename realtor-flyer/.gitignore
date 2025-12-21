@@ -23,6 +23,15 @@
 # misc
 .DS_Store
 *.pem
+service-account-key.json
+*.json
+!package.json
+!tsconfig.json
+!package-lock.json
+!next.lock
+!eslint.config.mjs
+!postcss.config.js
+!tailwind.config.js
 
 # debug
 npm-debug.log*

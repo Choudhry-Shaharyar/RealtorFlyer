@@ -7,6 +7,8 @@ datasource db {
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
+
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -14,10 +16,10 @@ model User {
   emailVerified DateTime?
   image         String?
   
-  // Realtor profile (to be filled in onboarding)
+  // Realtor profile
   phone         String?
   companyName   String?
-  profilePhoto  String?
+  profilePhoto  String?   @db.Text
   
   // Subscription
   planType      String    @default("free")
@@ -29,6 +31,9 @@ model User {
   
   accounts      Account[]
   sessions      Session[]
+  projects      Project[]
+  generatedImages GeneratedImage[]
+  portraits     UserPortrait[]
 }
 
 model Account {
@@ -64,4 +69,85 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model UserPortrait {
+  id          String   @id @default(cuid())
+  userId      String
+  imageUrl    String   @db.Text
+  fileName    String?
+  fileSize    Int?
+  uploadedAt  DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Project {
+  id              String   @id @default(cuid())
+  userId          String
+  name            String
+  status          String   @default("draft") // draft, generating, completed, failed
+  
+  // Listing Details
+  listingType     String   // FOR SALE, FOR LEASE, SOLD, OPEN HOUSE, COMING SOON, PRICE REDUCTION
+  propertyAddress String?
+  price           String?
+  originalPrice   String?  // For price reduction
+  bedrooms        Int      @default(3)
+  bathrooms       Float    @default(2)
+  squareFeet      Int?
+  description     String?
+  
+  // Agent Details
+  agentName       String?
+  agentPhone      String?
+  agentCompany    String?
+  agentPortraitId String? // Optional link to a specific portrait used
+  
+  // Design Options
+  colorScheme     String   @default("navy")
+  style           String   @default("modern")
+  aspectRatio     String   @default("1:1") // 1:1, 9:16, 16:9, 4:5
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generatedImages GeneratedImage[]
+  projectImages   ProjectImage[]
+
+  @@index([userId])
+}
+
+model ProjectImage {
+  id          String   @id @default(cuid())
+  projectId   String
+  imageUrl    String   @db.Text // Base64 data
+  uploadOrder Int      @default(0)
+  fileName    String?
+  fileSize    Int?
+  mimeType    String?
+  uploadedAt  DateTime @default(now())
+
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+model GeneratedImage {
+  id          String   @id @default(cuid())
+  userId      String
+  projectId   String
+  imageData   String   @db.Text // Base64 image data
+  mimeType    String   @default("image/png")
+  prompt      String   @db.Text
+  createdAt   DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([projectId])
 }
