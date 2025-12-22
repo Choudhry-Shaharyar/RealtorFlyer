@@ -177,37 +177,47 @@ export default async function DashboardPage() {
                     </Card>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {user.projects.map((project) => (
-                            <Link key={project.id} href={`/projects/${project.id}`}>
-                                <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
-                                    <div className="aspect-square bg-muted relative overflow-hidden rounded-t-lg">
-                                        {project.generatedImages[0] ? (
-                                            <img
-                                                src={`data:${project.generatedImages[0].mimeType};base64,${project.generatedImages[0].imageData}`}
-                                                alt={project.name}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center">
-                                                <Image className="h-12 w-12 text-muted-foreground/50" />
-                                            </div>
-                                        )}
-                                        <Badge
-                                            className="absolute top-2 right-2"
-                                            variant={project.status === "completed" ? "default" : "secondary"}
-                                        >
-                                            {project.status}
-                                        </Badge>
-                                    </div>
-                                    <CardHeader className="pb-2">
-                                        <CardTitle className="text-base truncate">{project.name}</CardTitle>
-                                        <CardDescription className="text-xs">
-                                            {project.listingType} • ${project.price}
-                                        </CardDescription>
-                                    </CardHeader>
-                                </Card>
-                            </Link>
-                        ))}
+                        {user.projects.map((project) => {
+                            // Use address as the primary display title, fallback to project name
+                            const displayTitle = project.propertyAddress || project.name;
+
+                            return (
+                                <Link key={project.id} href={`/projects/${project.id}`}>
+                                    <Card className="hover:shadow-lg transition-shadow cursor-pointer h-full">
+                                        <div className="aspect-square bg-muted relative overflow-hidden rounded-t-lg">
+                                            {project.generatedImages[0] ? (
+                                                <img
+                                                    src={
+                                                        project.generatedImages[0].url ||
+                                                        (project.generatedImages[0].imageData
+                                                            ? `data:${project.generatedImages[0].mimeType};base64,${project.generatedImages[0].imageData}`
+                                                            : undefined)
+                                                    }
+                                                    alt={displayTitle}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center">
+                                                    <Image className="h-12 w-12 text-muted-foreground/50" />
+                                                </div>
+                                            )}
+                                            <Badge
+                                                className="absolute top-2 right-2"
+                                                variant={project.status === "completed" ? "default" : "secondary"}
+                                            >
+                                                {project.status}
+                                            </Badge>
+                                        </div>
+                                        <CardHeader className="pb-2">
+                                            <CardTitle className="text-base truncate">{displayTitle}</CardTitle>
+                                            <CardDescription className="text-xs">
+                                                {project.listingType} • ${project.price}
+                                            </CardDescription>
+                                        </CardHeader>
+                                    </Card>
+                                </Link>
+                            );
+                        })}
                     </div>
                 )}
             </div>

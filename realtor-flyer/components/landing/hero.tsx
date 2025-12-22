@@ -109,7 +109,7 @@ export function Hero() {
                             Real Estate Flyers in <span className="text-brand-gold">Seconds</span>
                         </h1>
                         <p className="text-xl text-muted-foreground max-w-[42rem] mx-auto">
-                            The AI-powered real estate flyer generator trusted by 500+ Canadian realtors. No design skills needed. Just enter the address and let AI do the rest.
+                            The AI-powered real estate flyer generator trusted by Canadian realtors. No design skills needed. Just enter the address and let AI do the rest.
                         </p>
                     </motion.div>
                     <motion.div

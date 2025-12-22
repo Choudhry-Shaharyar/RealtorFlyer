@@ -11,7 +11,6 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
@@ -49,41 +48,49 @@ export function DeleteProjectButton({ projectId, projectName }: DeleteProjectBut
         }
     };
 
+    const handleTriggerClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsOpen(true);
+    };
+
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Button
-                    variant="destructive"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => e.preventDefault()}
-                >
-                    <Trash2 className="h-4 w-4" />
-                </Button>
-            </DialogTrigger>
-            <DialogContent onClick={(e) => e.stopPropagation()}>
-                <DialogHeader>
-                    <DialogTitle>Delete Project</DialogTitle>
-                    <DialogDescription>
-                        Are you sure you want to delete &quot;{projectName}&quot;? This action cannot be undone.
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isDeleting}>
-                        Cancel
-                    </Button>
-                    <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                        {isDeleting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Deleting...
-                            </>
-                        ) : (
-                            "Delete"
-                        )}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
+        <>
+            <Button
+                variant="destructive"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleTriggerClick}
+            >
+                <Trash2 className="h-4 w-4" />
+            </Button>
+
+            <Dialog open={isOpen} onOpenChange={setIsOpen}>
+                <DialogContent onClick={(e) => e.stopPropagation()}>
+                    <DialogHeader>
+                        <DialogTitle>Delete Project</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to delete &quot;{projectName}&quot;? This action cannot be undone.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setIsOpen(false)} disabled={isDeleting}>
+                            Cancel
+                        </Button>
+                        <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                            {isDeleting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Deleting...
+                                </>
+                            ) : (
+                                "Delete"
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
+

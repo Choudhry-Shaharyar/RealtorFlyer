@@ -8,8 +8,18 @@ const nextConfig = {
                 port: '',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'bqcpfwwmyxooktrdmyop.supabase.co',
+                port: '',
+                pathname: '/storage/v1/object/public/**',
+            },
         ],
+    },
+    experimental: {
+        optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
     },
 };
 
 export default nextConfig;
+

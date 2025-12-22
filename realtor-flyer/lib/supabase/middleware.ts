@@ -50,16 +50,8 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
-    // If user is logged in, but tries to access login or reset-password, redirect to dashboard
-    if (
-        user &&
-        (request.nextUrl.pathname.startsWith('/login') ||
-            request.nextUrl.pathname.startsWith('/reset-password'))
-    ) {
-        const url = request.nextUrl.clone()
-        url.pathname = '/dashboard'
-        return NextResponse.redirect(url)
-    }
+    // NOTE: Removed auto-redirect for logged-in users accessing /login
+    // This allows users to sign out and sign in with a different Google account
 
     return response
 }

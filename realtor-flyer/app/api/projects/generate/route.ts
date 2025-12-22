@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { generateFlyerImage, FlyerParams } from "@/lib/gemini";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { uploadGeneratedFlyer, uploadProjectImage } from "@/lib/supabase-storage";
 
 export async function POST(request: Request) {
     try {
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
                 bathrooms: parseFloat(bathrooms),
                 squareFeet: squareFeet ? parseInt(squareFeet.replace(/,/g, "")) : null,
                 description: description || null,
+                propertyAddress: body.propertyAddress || null,
                 agentName,
                 agentPhone,
                 agentCompany,
@@ -79,19 +81,25 @@ export async function POST(request: Request) {
             },
         });
 
-        // 6. Save property images to database
+        // 6. Save property images to Supabase Storage and database
         if (propertyImages && Array.isArray(propertyImages) && propertyImages.length > 0) {
-            // We use promise all to save them in parallel
             await Promise.all(
-                propertyImages.map((imgData: string, index: number) =>
-                    prisma.projectImage.create({
+                propertyImages.map(async (imgData: string, index: number) => {
+                    // Generate a unique ID for the image
+                    const imageId = `${Date.now()}_${index}_${Math.random().toString(36).substring(2, 8)}`;
+
+                    // Upload to Supabase Storage
+                    const imageUrl = await uploadProjectImage(imgData, project.id, imageId);
+
+                    // Save URL to database (not base64)
+                    await prisma.projectImage.create({
                         data: {
                             projectId: project.id,
-                            imageUrl: imgData, // Storing base64 directly - note: this should be optimized for production (S3)
+                            imageUrl: imageUrl,
                             uploadOrder: index,
                         }
-                    })
-                )
+                    });
+                })
             );
         }
 
@@ -109,7 +117,7 @@ export async function POST(request: Request) {
             agentPhone,
             agentCompany: agentCompany || undefined,
             agentPortrait: agentPortrait || undefined,
-            propertyImages: propertyImages || undefined,
+            propertyImages: propertyImages || undefined, // Still pass base64 to Gemini for processing
             colorScheme: colorScheme as FlyerParams["colorScheme"],
             style: style as FlyerParams["style"],
             aspectRatio: aspectRatio as FlyerParams["aspectRatio"],
@@ -128,19 +136,68 @@ export async function POST(request: Request) {
             throw new Error("Failed to generate image with AI");
         }
 
-        // 8. Save generated image
+        // 8. Generate unique image ID and upload to Supabase Storage
+        const generatedImageId = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+        let imageUrl: string;
+        try {
+            imageUrl = await uploadGeneratedFlyer(
+                imageResult.base64,
+                user.id,
+                project.id,
+                generatedImageId
+            );
+        } catch (uploadError) {
+            console.error("Storage upload error:", uploadError);
+            // Fallback: save base64 to database if storage fails
+            const generatedImage = await prisma.generatedImage.create({
+                data: {
+                    userId: user.id,
+                    projectId: project.id,
+                    imageData: imageResult.base64,
+                    mimeType: imageResult.mimeType,
+                    prompt: JSON.stringify({
+                        ...flyerParams,
+                        propertyImages: undefined, // Don't store base64 in prompt
+                        agentPortrait: undefined,
+                    }),
+                },
+            });
+
+            await prisma.$transaction([
+                prisma.project.update({
+                    where: { id: project.id },
+                    data: { status: "completed" },
+                }),
+                prisma.user.update({
+                    where: { id: user.id },
+                    data: { creditsRemaining: { decrement: 1 } },
+                }),
+            ]);
+
+            return NextResponse.json({
+                success: true,
+                projectId: project.id,
+                imageId: generatedImage.id,
+            });
+        }
+
+        // 9. Save generated image URL to database (no base64)
         const generatedImage = await prisma.generatedImage.create({
             data: {
                 userId: user.id,
                 projectId: project.id,
-                imageData: imageResult.base64,
+                url: imageUrl,
                 mimeType: imageResult.mimeType,
-                prompt: JSON.stringify(flyerParams), // Be careful with size if images are included in params, maybe omit checks?
-                // Actually JSON.stringify(flyerParams) will double store the base64 images in the prompt field. Use truncated prompt or omit images in prompt log.
+                prompt: JSON.stringify({
+                    ...flyerParams,
+                    propertyImages: undefined, // Don't store base64 in prompt
+                    agentPortrait: undefined,
+                }),
             },
         });
 
-        // 9. Update project status and deduct credit
+        // 10. Update project status and deduct credit
         await prisma.$transaction([
             prisma.project.update({
                 where: { id: project.id },
@@ -165,3 +222,4 @@ export async function POST(request: Request) {
         );
     }
 }
+

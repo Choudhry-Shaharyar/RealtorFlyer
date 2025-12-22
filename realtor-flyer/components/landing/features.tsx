@@ -38,12 +38,12 @@ export function Features() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {features.map((feature) => (
-                        <Card key={feature.title} className="border-none shadow-md hover:shadow-lg transition-shadow">
+                        <Card key={feature.title} className="border-none shadow-md hover-lift hover-glow group cursor-default">
                             <CardHeader className="space-y-1 pb-2">
-                                <div className="w-12 h-12 rounded-lg bg-brand-navy/10 flex items-center justify-center mb-4">
-                                    <feature.icon className="h-6 w-6 text-brand-navy" />
+                                <div className="w-12 h-12 rounded-lg bg-brand-navy/10 flex items-center justify-center mb-4 group-hover:bg-brand-navy/20 transition-colors duration-300">
+                                    <feature.icon className="h-6 w-6 text-brand-navy group-hover:scale-110 transition-transform duration-300" />
                                 </div>
-                                <CardTitle className="text-xl text-brand-navy">{feature.title}</CardTitle>
+                                <CardTitle className="text-xl text-brand-navy group-hover:text-brand-gold transition-colors duration-300">{feature.title}</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <p className="text-muted-foreground">{feature.description}</p>

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Home, FolderOpen, Settings, CreditCard, LogOut } from "lucide-react";
+import { Home, FolderOpen, User, CreditCard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
@@ -103,9 +103,9 @@ export default async function DashboardLayout({
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>
-                                    <Link href="/settings" className="cursor-pointer">
-                                        <Settings className="mr-2 h-4 w-4" />
-                                        Settings
+                                    <Link href="/profile" className="cursor-pointer">
+                                        <User className="mr-2 h-4 w-4" />
+                                        Profile
                                     </Link>
                                 </DropdownMenuItem>
                                 <DropdownMenuItem asChild>

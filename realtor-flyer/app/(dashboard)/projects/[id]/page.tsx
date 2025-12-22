@@ -39,6 +39,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
     const latestImage = project.generatedImages[0];
 
+    // Get image source - prefer URL, fallback to Base64
+    const imageSrc = latestImage?.url ||
+        (latestImage?.imageData ? `data:${latestImage.mimeType};base64,${latestImage.imageData}` : null);
+
     return (
         <div className="container max-w-5xl mx-auto py-8 px-4">
             {/* Back Button */}
@@ -52,10 +56,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div>
                     <Card>
                         <CardContent className="p-4">
-                            {latestImage ? (
+                            {imageSrc ? (
                                 <div className="relative">
                                     <img
-                                        src={`data:${latestImage.mimeType};base64,${latestImage.imageData}`}
+                                        src={imageSrc}
                                         alt={project.name}
                                         className="w-full rounded-lg"
                                     />
@@ -75,6 +79,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     {latestImage && (
                         <div className="flex gap-3 mt-4">
                             <DownloadButton
+                                imageUrl={latestImage.url}
                                 imageData={latestImage.imageData}
                                 mimeType={latestImage.mimeType}
                                 filename={`${project.listingType.toLowerCase().replace(" ", "-")}-flyer`}

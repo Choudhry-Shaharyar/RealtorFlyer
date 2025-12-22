@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { generateFlyerImage, FlyerParams } from "@/lib/gemini";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { uploadGeneratedFlyer } from "@/lib/supabase-storage";
 
 export async function POST(
     request: Request,
@@ -51,8 +52,27 @@ export async function POST(
             return NextResponse.json({ error: "Project not found" }, { status: 404 });
         }
 
-        // Get property images as base64 array
-        const propertyImages = project.projectImages.map(img => img.imageUrl);
+        // Get property images - these are now URLs (or legacy base64)
+        // For Gemini, we need base64 data, so we need to fetch from URLs if they're storage URLs
+        const propertyImages: string[] = [];
+        for (const img of project.projectImages) {
+            if (img.imageUrl.startsWith('data:')) {
+                // Legacy base64 data
+                propertyImages.push(img.imageUrl);
+            } else if (img.imageUrl.startsWith('http')) {
+                // Storage URL - fetch and convert to base64
+                try {
+                    const response = await fetch(img.imageUrl);
+                    const buffer = await response.arrayBuffer();
+                    const base64 = Buffer.from(buffer).toString('base64');
+                    const mimeType = response.headers.get('content-type') || 'image/jpeg';
+                    propertyImages.push(`data:${mimeType};base64,${base64}`);
+                } catch (fetchError) {
+                    console.error(`Failed to fetch image ${img.imageUrl}:`, fetchError);
+                    // Skip this image
+                }
+            }
+        }
 
         // Regenerate with same settings, including images
         const flyerParams: FlyerParams = {
@@ -76,14 +96,57 @@ export async function POST(
 
         const imageResult = await generateFlyerImage(flyerParams);
 
-        // Save new image
+        // Upload to Supabase Storage
+        const generatedImageId = `gen_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+        let imageUrl: string;
+        try {
+            imageUrl = await uploadGeneratedFlyer(
+                imageResult.base64,
+                user.id,
+                project.id,
+                generatedImageId
+            );
+        } catch (uploadError) {
+            console.error("Storage upload error:", uploadError);
+            // Fallback: save base64 to database if storage fails
+            const generatedImage = await prisma.generatedImage.create({
+                data: {
+                    userId: user.id,
+                    projectId: project.id,
+                    imageData: imageResult.base64,
+                    mimeType: imageResult.mimeType,
+                    prompt: JSON.stringify({
+                        ...flyerParams,
+                        propertyImages: undefined,
+                        agentPortrait: undefined,
+                    }),
+                },
+            });
+
+            await prisma.user.update({
+                where: { id: user.id },
+                data: { creditsRemaining: { decrement: 1 } },
+            });
+
+            return NextResponse.json({
+                success: true,
+                imageId: generatedImage.id,
+            });
+        }
+
+        // Save new image URL to database
         const generatedImage = await prisma.generatedImage.create({
             data: {
                 userId: user.id,
                 projectId: project.id,
-                imageData: imageResult.base64,
+                url: imageUrl,
                 mimeType: imageResult.mimeType,
-                prompt: JSON.stringify(flyerParams),
+                prompt: JSON.stringify({
+                    ...flyerParams,
+                    propertyImages: undefined,
+                    agentPortrait: undefined,
+                }),
             },
         });
 
@@ -105,3 +168,4 @@ export async function POST(
         );
     }
 }
+

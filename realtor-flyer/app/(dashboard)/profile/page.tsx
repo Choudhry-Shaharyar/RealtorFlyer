@@ -8,36 +8,41 @@ import { Label } from "@/components/ui/label";
 import { PortraitUpload } from "@/components/PortraitUpload";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { updateProfileAction } from "@/app/actions";
+
+interface UserProfile {
+    name: string;
+    email: string;
+    phone: string;
+    companyName: string;
+    profilePhoto: string | undefined;
+}
 
 export default function ProfilePage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
-
-    // We would typically fetch this from an API
-    // For now, we'll just mock local state as a placeholder for the UI
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<UserProfile>({
         name: "",
-        email: "", // Read only usually
+        email: "",
         phone: "",
         companyName: "",
-        profilePhoto: undefined as string | undefined,
+        profilePhoto: undefined,
     });
 
     useEffect(() => {
-        // Simulate fetching user data
-        // In a real app, this would be a fetch to /api/user
         const loadProfile = async () => {
             try {
-                // Mock delay
-                await new Promise(resolve => setTimeout(resolve, 500));
-
-                // Mock data - in reality this comes from DB
+                const response = await fetch("/api/user/profile");
+                if (!response.ok) {
+                    throw new Error("Failed to fetch profile");
+                }
+                const data = await response.json();
                 setFormData({
-                    name: "John Smith",
-                    email: "john@example.com",
-                    phone: "+1 (555) 123-4567",
-                    companyName: "RE/MAX Elite",
-                    profilePhoto: undefined
+                    name: data.name || "",
+                    email: data.email || "",
+                    phone: data.phone || "",
+                    companyName: data.companyName || "",
+                    profilePhoto: data.profilePhoto || undefined,
                 });
             } catch (error) {
                 console.error(error);
@@ -50,17 +55,19 @@ export default function ProfilePage() {
         loadProfile();
     }, []);
 
-    const updateForm = (field: string, value: any) => {
+    const updateForm = (field: string, value: string | undefined) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 
     const handleSave = async () => {
         setIsSaving(true);
         try {
-            // Mock API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            // Here we would send a PUT/PATCH request to update the user
+            await updateProfileAction({
+                name: formData.name,
+                phone: formData.phone || undefined,
+                companyName: formData.companyName || undefined,
+                profilePhoto: formData.profilePhoto,
+            });
             toast.success("Profile updated successfully");
         } catch (error) {
             console.error(error);
@@ -86,7 +93,7 @@ export default function ProfilePage() {
                 <CardHeader>
                     <CardTitle>Professional Information</CardTitle>
                     <CardDescription>
-                        Manage your details and default branding
+                        Manage your details and default branding for flyers
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -109,6 +116,7 @@ export default function ProfilePage() {
                                     id="name"
                                     value={formData.name}
                                     onChange={(e) => updateForm("name", e.target.value)}
+                                    placeholder="Enter your full name"
                                 />
                             </div>
 
@@ -120,6 +128,9 @@ export default function ProfilePage() {
                                     disabled
                                     className="bg-muted"
                                 />
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Email cannot be changed
+                                </p>
                             </div>
 
                             <div>
@@ -128,6 +139,7 @@ export default function ProfilePage() {
                                     id="phone"
                                     value={formData.phone}
                                     onChange={(e) => updateForm("phone", e.target.value)}
+                                    placeholder="+1 (555) 123-4567"
                                 />
                             </div>
 
@@ -137,6 +149,7 @@ export default function ProfilePage() {
                                     id="companyName"
                                     value={formData.companyName}
                                     onChange={(e) => updateForm("companyName", e.target.value)}
+                                    placeholder="RE/MAX, Century 21, etc."
                                 />
                             </div>
                         </div>
@@ -157,3 +170,4 @@ export default function ProfilePage() {
         </div>
     );
 }
+

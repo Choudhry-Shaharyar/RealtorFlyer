@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "AI Real Estate Flyer Generator for Canadian Realtors | RealtorFlyer",
-  description: "Create professional property flyers in seconds using AI. Trusted by 500+ Canadian realtors. Free trial - no credit card required. Generate stunning MLS marketing flyers instantly.",
+  description: "Create professional property flyers in seconds using AI. Trusted by Canadian realtors. Free trial - no credit card required. Generate stunning MLS marketing flyers instantly.",
   openGraph: {
     title: "AI Real Estate Flyer Generator for Canadian Realtors",
     description: "Create professional property flyers in seconds using AI. No design skills needed.",

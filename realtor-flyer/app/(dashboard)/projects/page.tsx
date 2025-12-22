@@ -99,7 +99,10 @@ export default async function ProjectsPage({ searchParams }: ProjectsPageProps) 
                                     <div className="aspect-square bg-muted relative overflow-hidden rounded-t-lg">
                                         {project.generatedImages[0] ? (
                                             <img
-                                                src={`data:${project.generatedImages[0].mimeType};base64,${project.generatedImages[0].imageData}`}
+                                                src={
+                                                    project.generatedImages[0].url ||
+                                                    `data:${project.generatedImages[0].mimeType};base64,${project.generatedImages[0].imageData}`
+                                                }
                                                 alt={displayTitle}
                                                 className="w-full h-full object-cover"
                                             />
