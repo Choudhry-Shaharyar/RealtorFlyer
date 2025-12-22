@@ -1,8 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Gemini API
-const apiKey = process.env.GEMINI_API_KEY;
-
 // Export parameters interface
 export interface FlyerParams {
     listingType: "FOR SALE" | "FOR LEASE" | "SOLD" | "OPEN HOUSE" | "COMING SOON" | "PRICE REDUCTION";
@@ -140,6 +137,8 @@ Generate the final flyer image.
 export async function generateFlyerImage(
     params: FlyerParams
 ): Promise<{ base64: string; mimeType: string }> {
+    const apiKey = process.env.GEMINI_API_KEY;
+
     if (!apiKey) {
         throw new Error("GEMINI_API_KEY is not set");
     }
