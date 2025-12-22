@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/db';
 import { stripe, PLANS, PlanType } from '@/lib/stripe';
 
+// Force dynamic to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     console.log('[Stripe Checkout] POST request received');
 

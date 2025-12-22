@@ -3,6 +3,9 @@ import { createClient } from '@/lib/supabase/server';
 import { prisma } from '@/lib/db';
 import { stripe } from '@/lib/stripe';
 
+// Force dynamic to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 export async function POST() {
     try {
         // 1. Authenticate user

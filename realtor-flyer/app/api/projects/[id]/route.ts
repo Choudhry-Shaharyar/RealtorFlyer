@@ -3,6 +3,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// Force dynamic to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 const BUCKET_NAME = "realtor-flyer-assets";
 
 export async function DELETE(

@@ -4,6 +4,9 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { uploadGeneratedFlyer, uploadProjectImage } from "@/lib/supabase-storage";
 
+// Force dynamic to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
     try {
         // 1. Authenticate

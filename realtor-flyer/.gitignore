@@ -29,7 +29,7 @@ service-account-key.json
 !tsconfig.json
 !package-lock.json
 !next.lock
-!eslint.config.mjs
+!.eslintrc.json
 !postcss.config.js
 !tailwind.config.js
 
