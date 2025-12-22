@@ -6,9 +6,10 @@ import { uploadGeneratedFlyer } from "@/lib/supabase-storage";
 
 export async function POST(
     request: Request,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await params;
         const supabase = createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
@@ -40,7 +41,7 @@ export async function POST(
         }
 
         const project = await prisma.project.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 projectImages: {
                     orderBy: { uploadOrder: 'asc' },
