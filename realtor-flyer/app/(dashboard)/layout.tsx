@@ -18,6 +18,10 @@ import { ProfileSetupModal } from "@/components/dashboard/profile-setup-modal";
 import { NavLinks } from "@/components/dashboard/nav-links";
 import { LoadingBar } from "@/components/dashboard/loading-bar";
 
+// Force dynamic to prevent build-time execution
+export const dynamic = 'force-dynamic';
+
+
 export default async function DashboardLayout({
     children,
 }: {
