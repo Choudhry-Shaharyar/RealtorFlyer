@@ -10,7 +10,7 @@ export async function POST(
 ) {
     try {
         const { id } = await params;
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
         if (!authUser?.email) {

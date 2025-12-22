@@ -30,7 +30,7 @@ function getOrderBy(sort: string | undefined) {
 }
 
 export default async function ProjectsPage({ searchParams }: ProjectsPageProps) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
         data: { user },
     } = await supabase.auth.getUser();

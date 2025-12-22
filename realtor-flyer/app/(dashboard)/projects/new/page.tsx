@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { NewProjectForm } from "@/components/projects/new-project-form";
 
 export default async function NewProjectPage() {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user?.email) {

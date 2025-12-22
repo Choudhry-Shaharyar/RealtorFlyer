@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     try {
         // 1. Authenticate user
         console.log('[Stripe Checkout] Authenticating user...');
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
         if (!authUser?.email) {

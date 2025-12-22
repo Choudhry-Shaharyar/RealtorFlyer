@@ -6,7 +6,7 @@ import { stripe } from '@/lib/stripe';
 export async function POST() {
     try {
         // 1. Authenticate user
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
         if (!authUser?.email) {

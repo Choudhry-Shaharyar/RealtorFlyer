@@ -7,7 +7,7 @@ import { uploadGeneratedFlyer, uploadProjectImage } from "@/lib/supabase-storage
 export async function POST(request: Request) {
     try {
         // 1. Authenticate
-        const supabase = createClient();
+        const supabase = await createClient();
         const { data: { user: authUser } } = await supabase.auth.getUser();
 
         if (!authUser?.email) {

@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { uploadProfilePhoto } from "@/lib/supabase-storage";
 
 export async function signOutAction() {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signOut();
     redirect("/");
 }
@@ -23,7 +23,7 @@ export async function updateProfileAction({
     profilePhoto?: string;
     companyName?: string;
 }) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
         data: { user },
     } = await supabase.auth.getUser();
