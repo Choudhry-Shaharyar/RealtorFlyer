@@ -8,13 +8,14 @@ import { createClient } from '@supabase/supabase-js'
  * NEVER expose this client or the service role key to the browser.
  */
 export function createAdminClient() {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-    if (!supabaseServiceKey) {
+    // Only throw at runtime when actually called, not during build
+    if (!supabaseUrl || !supabaseServiceKey) {
         throw new Error(
-            'SUPABASE_SERVICE_ROLE_KEY is not set. ' +
-            'Add it to your .env file (get it from Supabase Dashboard > Settings > API)'
+            'Missing Supabase environment variables. ' +
+            'Ensure NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are set.'
         )
     }
 
@@ -25,3 +26,4 @@ export function createAdminClient() {
         },
     })
 }
+
