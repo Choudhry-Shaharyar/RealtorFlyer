@@ -41,7 +41,7 @@ function Carousel() {
 
     return (
         <div className="relative w-full h-full">
-            <AnimatePresence mode="wait">
+            <AnimatePresence initial={false} mode="wait">
                 <motion.div
                     key={current}
                     initial={{ opacity: 0 }}
@@ -55,7 +55,8 @@ function Carousel() {
                         alt={CAROUSEL_IMAGES[current].alt}
                         fill
                         className="object-cover"
-                        priority
+                        priority={current === 0}
+                        sizes="(max-width: 768px) 100vw, 1280px"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
                         <h3 className="text-white text-2xl font-bold">{CAROUSEL_IMAGES[current].caption}</h3>
@@ -116,15 +117,15 @@ export function Hero() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="flex flex-col sm:flex-row gap-4"
+                        className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto px-4 sm:px-0"
                     >
-                        <Link href="/login">
-                            <Button size="lg" className="h-12 px-8 text-lg font-semibold bg-brand-gold hover:bg-brand-gold-light text-brand-navy">
-                                Start Free Trial - Create Your First Flyer
+                        <Link href="/login" className="w-full sm:w-auto">
+                            <Button size="default" className="w-full sm:w-auto h-11 sm:h-12 px-4 sm:px-8 text-sm sm:text-lg font-semibold bg-brand-gold hover:bg-brand-gold-light text-brand-navy">
+                                Start Free Trial
                             </Button>
                         </Link>
-                        <Link href="#examples">
-                            <Button size="lg" variant="outline" className="h-12 px-8 text-lg">
+                        <Link href="#examples" className="w-full sm:w-auto">
+                            <Button size="default" variant="outline" className="w-full sm:w-auto h-11 sm:h-12 px-4 sm:px-8 text-sm sm:text-lg">
                                 See Examples
                             </Button>
                         </Link>

@@ -3,7 +3,6 @@ import { SocialProof } from "@/components/landing/social-proof"
 import { Problem } from "@/components/landing/problem"
 import { HowItWorks } from "@/components/landing/how-it-works"
 import { Features } from "@/components/landing/features"
-import { Gallery } from "@/components/landing/gallery"
 import { Pricing } from "@/components/landing/pricing"
 import { Testimonials } from "@/components/landing/testimonials"
 import { FAQ } from "@/components/landing/faq"
@@ -17,7 +16,6 @@ export default function LandingPage() {
             <Problem />
             <HowItWorks />
             <Features />
-            <Gallery />
             <Pricing />
             <Testimonials />
             <FAQ />
@@ -25,3 +23,4 @@ export default function LandingPage() {
         </div>
     )
 }
+
