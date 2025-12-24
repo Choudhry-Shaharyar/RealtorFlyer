@@ -3,7 +3,7 @@ import { XCircle } from "lucide-react"
 export function Problem() {
     return (
         <section className="py-20 bg-background">
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-brand-navy">Stop Wasting Time on Design</h2>
                     <p className="mt-4 text-muted-foreground text-lg">Your job is to sell homes, not fiddle with pixels.</p>

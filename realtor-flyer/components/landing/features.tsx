@@ -27,7 +27,7 @@ const features = [
 export function Features() {
     return (
         <section id="features" className="py-20 bg-slate-50">
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-navy">
                         Why Canadian Realtors Choose RealtorFlyer

@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 export function Testimonials() {
     return (
         <section className="py-20 bg-background">
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <h2 className="text-3xl font-bold text-center text-brand-navy mb-12">Loved by Real Estate Professionals</h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <Card className="bg-slate-50 border-none shadow-sm">

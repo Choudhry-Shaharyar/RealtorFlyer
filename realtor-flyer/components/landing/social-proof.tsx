@@ -12,7 +12,7 @@ const BRANDS = [
 export function SocialProof() {
     return (
         <section className="py-12 border-y bg-slate-50/50 overflow-hidden">
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <div className="flex flex-col items-center gap-6 text-center">
                     <p className="font-semibold text-muted-foreground uppercase tracking-widest text-sm">
                         Trusted by Canadian Agents at

@@ -20,6 +20,7 @@ interface PricingCardProps {
     planId?: string
     onSubscribe?: (planId: string) => Promise<void>
     isLoading?: boolean
+    comingSoon?: boolean
 }
 
 const PricingCard = ({
@@ -33,11 +34,17 @@ const PricingCard = ({
     planId,
     onSubscribe,
     isLoading,
+    comingSoon = false,
 }: PricingCardProps) => (
-    <Card className={`relative flex flex-col ${recommended ? 'border-brand-gold shadow-lg scale-105 z-10' : ''}`}>
+    <Card className={`relative flex flex-col ${recommended ? 'border-brand-gold shadow-lg scale-105 z-10' : ''} ${comingSoon ? 'opacity-75' : ''}`}>
         {recommended && (
             <div className="absolute -top-4 left-0 right-0 mx-auto w-fit px-4 py-1 bg-brand-gold text-brand-navy text-xs font-bold rounded-full uppercase tracking-wide">
                 Most Popular
+            </div>
+        )}
+        {comingSoon && (
+            <div className="absolute -top-4 left-0 right-0 mx-auto w-fit px-4 py-1 bg-gray-500 text-white text-xs font-bold rounded-full uppercase tracking-wide">
+                Coming Soon
             </div>
         )}
         <CardHeader>
@@ -59,7 +66,15 @@ const PricingCard = ({
             </ul>
         </CardContent>
         <CardFooter>
-            {planId ? (
+            {comingSoon ? (
+                <Button
+                    className="w-full"
+                    variant="outline"
+                    disabled
+                >
+                    Coming Soon
+                </Button>
+            ) : planId ? (
                 <Button
                     className={`w-full ${recommended ? 'bg-brand-navy hover:bg-brand-navy-light text-white' : ''}`}
                     variant={recommended ? 'default' : 'outline'}
@@ -144,7 +159,7 @@ export function Pricing() {
 
     return (
         <section id="pricing" className="py-20">
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <div className="flex flex-col items-center justify-center space-y-4 text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold text-brand-navy">
                         Real Estate Flyer Generator Pricing for Canadian Agents
@@ -199,10 +214,7 @@ export function Pricing() {
                         yearlyPrice={119}
                         period={period}
                         features={["500 flyers/month", "5 team seats", "White-label option", "API access", "Dedicated support"]}
-                        buttonText="Subscribe"
-                        planId="agency"
-                        onSubscribe={handleSubscribe}
-                        isLoading={loadingPlan === 'agency'}
+                        comingSoon={true}
                     />
                 </div>
             </div>

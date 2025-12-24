@@ -89,13 +89,13 @@ export function Hero() {
     return (
         <section className="relative overflow-hidden pt-10 pb-32 md:pt-12">
             <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-navy-light/10 via-background to-background" />
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <div className="flex flex-col items-center space-y-8 text-center">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
-                        className="space-y-4 max-w-3xl"
+                        className="space-y-4 max-w-4xl"
                     >
                         <div className="flex justify-center gap-2">
                             <Badge variant="outline" className="border-brand-gold text-brand-gold bg-brand-gold/10 px-3 py-1 text-sm font-medium rounded-full">

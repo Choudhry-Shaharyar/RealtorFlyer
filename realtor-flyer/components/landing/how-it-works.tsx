@@ -3,7 +3,7 @@ import { ClipboardList, Palette, Share2, ArrowRight } from "lucide-react"
 export function HowItWorks() {
     return (
         <section className="py-20 bg-brand-navy-light/5">
-            <div className="container px-4 md:px-6">
+            <div className="container">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl font-bold text-brand-navy">How to Create Real Estate Flyers with AI</h2>
                 </div>

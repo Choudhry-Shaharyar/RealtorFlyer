@@ -38,7 +38,7 @@ const faqs = [
 export function FAQ() {
     return (
         <section className="py-20 bg-slate-50">
-            <div className="container px-4 md:px-6 max-w-4xl">
+            <div className="container max-w-4xl">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-brand-navy mb-4">Real Estate Flyer Generator - Frequently Asked Questions</h2>
                 </div>
