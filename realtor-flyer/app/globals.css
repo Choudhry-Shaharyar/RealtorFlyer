@@ -97,10 +97,6 @@
   }
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
 /* Enhanced hover effects */
 @layer utilities {
   .hover-lift {

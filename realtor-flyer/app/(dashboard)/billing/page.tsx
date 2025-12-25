@@ -1,8 +1,8 @@
 "use client";
 
 import { createClient } from "@/lib/supabase/client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CreditCard, Sparkles, Check, Loader2, Calendar, AlertCircle } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,19 @@ const PLAN_CREDITS: Record<string, number> = {
     agency: 500,
 };
 
+const VALID_PLANS = ["starter", "pro", "agency"];
+
 export default function BillingPage() {
     const [user, setUser] = useState<UserSubscription | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isPortalLoading, setIsPortalLoading] = useState(false);
+    const [isAutoCheckout, setIsAutoCheckout] = useState(false);
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const autoCheckoutTriggered = useRef(false);
+
+    // Get plan from URL params
+    const planFromUrl = searchParams.get("plan");
 
     useEffect(() => {
         const loadUser = async () => {
@@ -54,6 +62,21 @@ export default function BillingPage() {
 
         loadUser();
     }, [router]);
+
+    // Auto-trigger checkout if plan param is present and valid
+    useEffect(() => {
+        if (
+            user &&
+            planFromUrl &&
+            VALID_PLANS.includes(planFromUrl) &&
+            !autoCheckoutTriggered.current &&
+            !isLoading
+        ) {
+            autoCheckoutTriggered.current = true;
+            setIsAutoCheckout(true);
+            handleUpgrade(planFromUrl);
+        }
+    }, [user, planFromUrl, isLoading]);
 
     const handleManageSubscription = async () => {
         setIsPortalLoading(true);
@@ -115,13 +138,17 @@ export default function BillingPage() {
         } catch (error) {
             console.error('[Billing] Upgrade error:', error);
             toast.error(error instanceof Error ? error.message : "Failed to start checkout");
+            setIsAutoCheckout(false);
         }
     };
 
-    if (isLoading) {
+    if (isLoading || isAutoCheckout) {
         return (
-            <div className="flex items-center justify-center h-96">
+            <div className="flex flex-col items-center justify-center h-96 gap-4">
                 <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                {isAutoCheckout && (
+                    <p className="text-muted-foreground">Redirecting to checkout...</p>
+                )}
             </div>
         );
     }

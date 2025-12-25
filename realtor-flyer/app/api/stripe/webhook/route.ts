@@ -8,11 +8,16 @@ import Stripe from 'stripe';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
+    console.log('[Stripe Webhook] Received webhook request');
+
     const body = await request.text();
-    const headersList = headers();
+    const headersList = await headers();
     const signature = headersList.get('stripe-signature');
 
+    console.log('[Stripe Webhook] Signature present:', !!signature);
+
     if (!signature) {
+        console.error('[Stripe Webhook] No signature in request');
         return NextResponse.json({ error: 'No signature' }, { status: 400 });
     }
 
@@ -24,8 +29,9 @@ export async function POST(request: Request) {
             signature,
             process.env.STRIPE_WEBHOOK_SECRET!
         );
+        console.log('[Stripe Webhook] Event verified:', event.type, 'ID:', event.id);
     } catch (err) {
-        console.error('Webhook signature verification failed:', err);
+        console.error('[Stripe Webhook] Signature verification failed:', err);
         return NextResponse.json(
             { error: 'Webhook signature verification failed' },
             { status: 400 }
@@ -33,44 +39,54 @@ export async function POST(request: Request) {
     }
 
     try {
+        console.log('[Stripe Webhook] Processing event type:', event.type);
+
         switch (event.type) {
             case 'checkout.session.completed': {
+                console.log('[Stripe Webhook] Handling checkout.session.completed');
                 const session = event.data.object as Stripe.Checkout.Session;
+                console.log('[Stripe Webhook] Session ID:', session.id);
+                console.log('[Stripe Webhook] Session metadata:', session.metadata);
                 await handleCheckoutCompleted(session);
                 break;
             }
 
             case 'customer.subscription.updated': {
+                console.log('[Stripe Webhook] Handling customer.subscription.updated');
                 const subscription = event.data.object as Stripe.Subscription;
                 await handleSubscriptionUpdated(subscription);
                 break;
             }
 
             case 'customer.subscription.deleted': {
+                console.log('[Stripe Webhook] Handling customer.subscription.deleted');
                 const subscription = event.data.object as Stripe.Subscription;
                 await handleSubscriptionDeleted(subscription);
                 break;
             }
 
             case 'invoice.payment_succeeded': {
+                console.log('[Stripe Webhook] Handling invoice.payment_succeeded');
                 const invoice = event.data.object as Stripe.Invoice;
                 await handleInvoicePaymentSucceeded(invoice);
                 break;
             }
 
             case 'invoice.payment_failed': {
+                console.log('[Stripe Webhook] Handling invoice.payment_failed');
                 const invoice = event.data.object as Stripe.Invoice;
                 await handleInvoicePaymentFailed(invoice);
                 break;
             }
 
             default:
-                console.log(`Unhandled event type: ${event.type}`);
+                console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
         }
 
+        console.log('[Stripe Webhook] Event processed successfully');
         return NextResponse.json({ received: true });
     } catch (error) {
-        console.error('Webhook handler error:', error);
+        console.error('[Stripe Webhook] Handler error:', error);
         return NextResponse.json(
             { error: 'Webhook handler failed' },
             { status: 500 }
@@ -80,21 +96,28 @@ export async function POST(request: Request) {
 
 // Handle successful checkout
 async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
+    console.log('[Stripe Webhook] handleCheckoutCompleted called');
+
     const dbUserId = session.metadata?.db_user_id;
     const plan = session.metadata?.plan;
     const subscriptionId = session.subscription as string;
 
+    console.log('[Stripe Webhook] Extracted data:', { dbUserId, plan, subscriptionId });
+
     if (!dbUserId || !plan) {
-        console.error('Missing metadata in checkout session');
+        console.error('[Stripe Webhook] Missing metadata - dbUserId:', dbUserId, 'plan:', plan);
         return;
     }
 
     // Fetch the subscription to get period end
+    console.log('[Stripe Webhook] Fetching subscription:', subscriptionId);
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const periodEnd = (subscription as any).current_period_end;
+    console.log('[Stripe Webhook] Subscription period end:', periodEnd);
 
-    await prisma.user.update({
+    console.log('[Stripe Webhook] Updating user in database...');
+    const updatedUser = await prisma.user.update({
         where: { id: dbUserId },
         data: {
             planType: plan,
@@ -105,7 +128,13 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         },
     });
 
-    console.log(`User ${dbUserId} subscribed to ${plan} plan`);
+    console.log(`[Stripe Webhook] User ${dbUserId} successfully updated to ${plan} plan`);
+    console.log('[Stripe Webhook] Updated user data:', {
+        id: updatedUser.id,
+        planType: updatedUser.planType,
+        creditsRemaining: updatedUser.creditsRemaining,
+        subscriptionStatus: updatedUser.subscriptionStatus,
+    });
 }
 
 // Handle subscription updates (plan changes, etc.)

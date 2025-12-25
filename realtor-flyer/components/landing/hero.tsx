@@ -10,7 +10,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 
 const CAROUSEL_IMAGES = [
     {
-        src: "https://images.unsplash.com/photo-1600596542815-e495d91bae32?q=80&w=1600&auto=format&fit=crop",
+        src: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?q=80&w=1600&auto=format&fit=crop",
         alt: "Luxury Modern Home",
         caption: "Modern Luxury Flyers"
     },
