@@ -126,6 +126,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cancelAtPeriodEnd = (subscription as any).cancel_at_period_end || false;
+
     console.log('[Stripe Webhook] Updating user in database...');
     const updatedUser = await prisma.user.update({
         where: { id: dbUserId },
@@ -135,6 +138,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
             stripeSubscriptionId: subscriptionId,
             subscriptionStatus: 'active',
             currentPeriodEnd: new Date(periodEnd * 1000),
+            cancelAtPeriodEnd: cancelAtPeriodEnd,
         },
     });
 
@@ -191,12 +195,16 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cancelAtPeriodEnd = (subscription as any).cancel_at_period_end || false;
+
     await prisma.user.update({
         where: { id: user.id },
         data: {
             planType,
             subscriptionStatus,
             currentPeriodEnd: new Date(periodEnd * 1000),
+            cancelAtPeriodEnd: cancelAtPeriodEnd,
         },
     });
 
@@ -225,6 +233,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
             stripeSubscriptionId: null,
             subscriptionStatus: 'cancelled',
             currentPeriodEnd: null,
+            cancelAtPeriodEnd: false,
         },
     });
 
@@ -278,6 +287,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
             creditsRemaining: getCreditsForPlan(planType),
             subscriptionStatus: 'active',
             currentPeriodEnd: new Date(periodEnd * 1000),
+            cancelAtPeriodEnd: false, // Reset on renewal
         },
     });
 

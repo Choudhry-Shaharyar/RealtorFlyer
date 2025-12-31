@@ -30,6 +30,7 @@ export async function GET() {
                 subscriptionStatus: true,
                 currentPeriodEnd: true,
                 stripeCustomerId: true,
+                cancelAtPeriodEnd: true, // Include new field
             },
         });
 

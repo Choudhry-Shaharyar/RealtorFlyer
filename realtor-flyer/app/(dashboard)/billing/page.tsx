@@ -16,6 +16,7 @@ interface UserSubscription {
     subscriptionStatus: string;
     currentPeriodEnd: string | null;
     stripeCustomerId: string | null;
+    cancelAtPeriodEnd?: boolean;
 }
 
 const PLAN_CREDITS: Record<string, number> = {
@@ -235,11 +236,14 @@ export default function BillingPage() {
                             </p>
                         </div>
 
-                        {/* Renewal Date */}
+                        {/* Renewal / Cancellation Date */}
                         {user.currentPeriodEnd && hasActiveSubscription && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <Calendar className="h-4 w-4" />
-                                <span>Renews on {formatDate(user.currentPeriodEnd)}</span>
+                                <span>
+                                    {user.cancelAtPeriodEnd ? "Expires on " : "Renews on "}
+                                    {formatDate(user.currentPeriodEnd)}
+                                </span>
                             </div>
                         )}
                     </CardContent>
