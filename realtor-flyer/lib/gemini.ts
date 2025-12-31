@@ -155,25 +155,43 @@ export async function generateFlyerImage(
     // Prepare content parts: Text prompt + Images
     const parts: any[] = [{ text: promptText }];
 
+
     // Add property images
     if (params.propertyImages && params.propertyImages.length > 0) {
-        params.propertyImages.forEach((base64Data) => {
-            // Remove header if present (e.g. "data:image/jpeg;base64,")
-            const cleanBase64 = base64Data.split(',').pop() || "";
+        await Promise.all(params.propertyImages.map(async (imgData) => {
+            let cleanBase64 = "";
+
+            if (imgData.startsWith("http")) {
+                // It's a URL, fetch and convert
+                cleanBase64 = await urlToBase64(imgData);
+            } else {
+                // It's likely base64 (with or without header)
+                cleanBase64 = imgData.split(',').pop() || "";
+            }
+
             if (cleanBase64) {
                 parts.push({
                     inlineData: {
                         data: cleanBase64,
-                        mimeType: "image/jpeg" // Analyzing mime type might be better but JPEG/PNG is standard
+                        mimeType: "image/jpeg"
                     }
                 });
             }
-        });
+        }));
     }
 
     // Add agent portrait if exists
     if (params.agentPortrait) {
-        const cleanBase64 = params.agentPortrait.split(',').pop() || "";
+        let cleanBase64 = "";
+
+        if (params.agentPortrait.startsWith("http")) {
+            // It's a URL, fetch and convert
+            cleanBase64 = await urlToBase64(params.agentPortrait);
+        } else {
+            // It's likely base64
+            cleanBase64 = params.agentPortrait.split(',').pop() || "";
+        }
+
         if (cleanBase64) {
             parts.push({
                 inlineData: {
@@ -213,6 +231,20 @@ export async function generateFlyerImage(
     } catch (error) {
         console.error("Gemini Generation Error:", error);
         throw error;
+    }
+}
+
+// Helper to convert URL to Base64
+async function urlToBase64(url: string): Promise<string> {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        return buffer.toString('base64');
+    } catch (error) {
+        console.error("Error converting URL to Base64:", error);
+        return ""; // Return empty string on failure to avoid crashing, though arguably should throw
     }
 }
 

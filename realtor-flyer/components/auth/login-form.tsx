@@ -78,10 +78,13 @@ export function LoginForm({ redirectPlan }: LoginFormProps) {
             ? `/auth/callback?next=${encodeURIComponent(`/billing?plan=${redirectPlan}`)}`
             : `/auth/callback`
 
+        const fullRedirectUrl = `${window.location.origin}${callbackUrl}`
+        console.log('Redirect URL:', fullRedirectUrl)  // Check this in browser console
+
         const { error } = await supabase.auth.signInWithOAuth({
             provider,
             options: {
-                redirectTo: `${window.location.origin}${callbackUrl}`,
+                redirectTo: fullRedirectUrl,
                 queryParams: {
                     prompt: "select_account",
                 },

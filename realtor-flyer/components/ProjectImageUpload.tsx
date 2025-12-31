@@ -17,7 +17,22 @@ export function ProjectImageUpload({
     onImagesChange,
     maxImages = 5
 }: ProjectImageUploadProps) {
-    const onDrop = useCallback((acceptedFiles: File[]) => {
+    const onDrop = useCallback((acceptedFiles: File[], fileRejections: any[]) => {
+        // Handle rejections first
+        if (fileRejections.length > 0) {
+            fileRejections.forEach(({ file, errors }) => {
+                errors.forEach((err: any) => {
+                    if (err.code === "file-too-large") {
+                        toast.error(`File ${file.name} is too large. Max size is 5MB.`);
+                    } else if (err.code === "file-invalid-type") {
+                        toast.error(`File ${file.name} has an invalid type. Only JPG, PNG, and WebP are allowed.`);
+                    } else {
+                        toast.error(`Could not upload ${file.name}: ${err.message}`);
+                    }
+                });
+            });
+        }
+
         if (images.length + acceptedFiles.length > maxImages) {
             toast.error(`You can only upload a maximum of ${maxImages} images.`);
             return;
@@ -47,7 +62,7 @@ export function ProjectImageUpload({
             'image/png': [],
             'image/webp': []
         },
-        maxSize: 10 * 1024 * 1024, // 10MB
+        maxSize: 5 * 1024 * 1024, // 5MB Limit per user request
     });
 
     const removeImage = (index: number) => {
@@ -77,7 +92,7 @@ export function ProjectImageUpload({
                         Drag & drop or click to select
                     </div>
                     <div className="text-xs text-muted-foreground mt-2">
-                        JPG, PNG, WebP up to 10MB each
+                        JPG, PNG, WebP up to 5MB each
                     </div>
                 </div>
             </div>

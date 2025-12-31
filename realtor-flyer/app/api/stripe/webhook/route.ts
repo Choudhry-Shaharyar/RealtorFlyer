@@ -112,9 +112,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     // Fetch the subscription to get period end
     console.log('[Stripe Webhook] Fetching subscription:', subscriptionId);
     const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+    // Debug logging
+    console.log('[Stripe Webhook] Subscription keys:', Object.keys(subscription));
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const periodEnd = (subscription as any).current_period_end;
+    let periodEnd = (subscription as any).current_period_end;
     console.log('[Stripe Webhook] Subscription period end:', periodEnd);
+
+    // Fallback if periodEnd is missing (should verify why)
+    if (!periodEnd) {
+        console.warn('[Stripe Webhook] Warning: current_period_end missing, defaulting to 30 days');
+        periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+    }
 
     console.log('[Stripe Webhook] Updating user in database...');
     const updatedUser = await prisma.user.update({
@@ -174,7 +184,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const periodEnd = (subscription as any).current_period_end;
+    let periodEnd = (subscription as any).current_period_end;
+
+    if (!periodEnd) {
+        console.warn('[Stripe Webhook] Warning: current_period_end missing in update, defaulting to 30 days');
+        periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+    }
 
     await prisma.user.update({
         where: { id: user.id },
@@ -249,7 +264,12 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
     const priceId = subscription.items.data[0]?.price?.id;
     const planType = priceId ? getPlanFromPriceId(priceId) : user.planType;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const periodEnd = (subscription as any).current_period_end;
+    let periodEnd = (subscription as any).current_period_end;
+
+    if (!periodEnd) {
+        console.warn('[Stripe Webhook] Warning: current_period_end missing in invoice payment, defaulting to 30 days');
+        periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+    }
 
     // Reset credits to plan allocation
     await prisma.user.update({

@@ -35,6 +35,15 @@ export function PortraitUpload({ value, onChange }: PortraitUploadProps) {
         },
         maxFiles: 1,
         maxSize: 5 * 1024 * 1024, // 5MB
+        onDropRejected: (fileRejections) => {
+            fileRejections.forEach(({ file, errors }) => {
+                if (errors[0]?.code === "file-too-large") {
+                    toast.error("File is too large. Max size is 5MB.");
+                } else if (errors[0]?.code === "file-invalid-type") {
+                    toast.error("Invalid file type.");
+                }
+            });
+        }
     });
 
     const removePortrait = () => {

@@ -248,5 +248,5 @@ export async function uploadProfilePhoto(
         .from(BUCKET_NAME)
         .getPublicUrl(data.path);
 
-    return urlData.publicUrl;
+    return `${urlData.publicUrl}?t=${Date.now()}`;
 }

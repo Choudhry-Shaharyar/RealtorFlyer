@@ -16,6 +16,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import { PortraitUpload } from "@/components/PortraitUpload";
 import { ProjectImageUpload } from "@/components/ProjectImageUpload";
+import { uploadBase64Image } from "@/lib/client-storage";
+import { createClient } from "@/lib/supabase/client";
 
 const LISTING_TYPES = [
     { value: "FOR SALE", label: "For Sale", icon: Home, description: "Standard property listing" },
@@ -42,9 +44,9 @@ const STYLES = [
 
 const ASPECT_RATIOS = [
     { value: "1:1", label: "Square", description: "Instagram Feed", size: "1080×1080" },
-    { value: "9:16", label: "Portrait", description: "Instagram/TikTok Stories", size: "1080×1920" },
+    { value: "9:16", label: "Story / Full Screen", description: "IG/TikTok Stories", size: "1080×1920" },
     { value: "16:9", label: "Landscape", description: "Facebook/LinkedIn", size: "1920×1080" },
-    { value: "4:5", label: "Portrait", description: "Instagram Portrait", size: "1080×1350" },
+    { value: "4:5", label: "Vertical Post", description: "IG Feed Portrait", size: "1080×1350" },
 ];
 
 interface NewProjectFormProps {
@@ -111,10 +113,67 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
         setIsGenerating(true);
 
         try {
+            // 1. Get current user ID for uploads
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                toast.error("You must be logged in to generate a flyer");
+                router.push("/sign-in");
+                return;
+            }
+
+            // 2. Prepare data copy
+            const updatedFormData = { ...formData };
+
+            // 3. Upload Agent Portrait if Base64
+            if (updatedFormData.agentPortrait && updatedFormData.agentPortrait.startsWith("data:")) {
+                try {
+                    toast.info("Uploading agent portrait...");
+                    const publicUrl = await uploadBase64Image(updatedFormData.agentPortrait, user.id);
+                    updatedFormData.agentPortrait = publicUrl;
+                } catch (error) {
+                    console.error("Portrait upload failed:", error);
+                    toast.error("Failed to upload portrait. Please try a different image.");
+                    setIsGenerating(false);
+                    return;
+                }
+            }
+
+            // 4. Upload Property Images if Base64
+            if (updatedFormData.propertyImages && updatedFormData.propertyImages.length > 0) {
+                const uploadedImages: string[] = [];
+
+                // Track if we are uploading to show progress
+                const hasBase64 = updatedFormData.propertyImages.some(img => img.startsWith("data:"));
+                if (hasBase64) {
+                    toast.info("Uploading property images...");
+                }
+
+                for (const img of updatedFormData.propertyImages) {
+                    if (img.startsWith("data:")) {
+                        try {
+                            const publicUrl = await uploadBase64Image(img, user.id);
+                            uploadedImages.push(publicUrl);
+                        } catch (error) {
+                            console.error("Image upload failed:", error);
+                            toast.error("Failed to upload one or more property images.");
+                            setIsGenerating(false);
+                            return;
+                        }
+                    } else {
+                        // Already a URL (e.g. from previous edit or fetch)
+                        uploadedImages.push(img);
+                    }
+                }
+                updatedFormData.propertyImages = uploadedImages;
+            }
+
+            // 5. Submit to API with URLs
             const response = await fetch("/api/projects/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(updatedFormData),
             });
 
             const data = await response.json();

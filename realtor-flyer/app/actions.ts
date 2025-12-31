@@ -71,4 +71,3 @@ export async function updateProfileAction({
         throw new Error("Failed to update profile");
     }
 }
-
