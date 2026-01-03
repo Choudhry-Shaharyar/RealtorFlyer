@@ -104,7 +104,7 @@ export function Pricing() {
                     </Tabs>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-start max-w-5xl mx-auto">
                     <PricingCard
                         title="Free"
                         price={0}
@@ -128,18 +128,18 @@ export function Pricing() {
                         price={49}
                         yearlyPrice={39}
                         period={period}
-                        features={["100 flyers/month", "Priority generation", "Bulk download", "Analytics dashboard", "Priority support"]}
+                        features={["100 flyers/month", "All templates", "No watermark", "HD downloads", "Priority support"]}
                         buttonText="Go Pro"
                         planId="pro"
                     />
-                    <PricingCard
+                    {/* <PricingCard
                         title="Agency"
                         price={149}
                         yearlyPrice={119}
                         period={period}
                         features={["500 flyers/month", "5 team seats", "White-label option", "API access", "Dedicated support"]}
                         comingSoon={true}
-                    />
+                    /> */}
                 </div>
             </div>
         </section>

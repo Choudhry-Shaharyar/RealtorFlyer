@@ -5,7 +5,7 @@ import { ForgotPasswordForm } from "@/components/auth/forgot-password-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export const metadata: Metadata = {
-    title: "Login - AgentFlyers",
+    title: "Login - RealtorFlyer",
     description: "Sign in to your account",
 }
 
@@ -22,12 +22,12 @@ export default function LoginPage({
             <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
                 <div className="absolute inset-0 bg-brand-navy" />
                 <div className="relative z-20 flex items-center text-lg font-medium">
-                    <Link href="/">AgentFlyers</Link>
+                    <Link href="/">RealtorFlyer</Link>
                 </div>
                 <div className="relative z-20 mt-auto">
                     <blockquote className="space-y-2">
                         <p className="text-lg">
-                            &ldquo;AgentFlyers has transformed how I market my listings. I can now generate professional open house flyers in minutes instead of hours.&rdquo;
+                            &ldquo;RealtorFlyer has transformed how I market my listings. I can now generate professional open house flyers in minutes instead of hours.&rdquo;
                         </p>
                         <footer className="text-sm">Sarah Jenkins, RE/MAX Top Producer</footer>
                     </blockquote>
@@ -58,7 +58,7 @@ export default function LoginPage({
                     <Card className="border-none shadow-none">
                         <CardHeader className="text-center">
                             <CardTitle className="text-2xl font-bold text-brand-navy">
-                                {view === 'forgot_password' ? 'Reset Password' : 'Log in to AgentFlyers'}
+                                {view === 'forgot_password' ? 'Reset Password' : 'Log in to RealtorFlyer'}
                             </CardTitle>
                             <CardDescription>
                                 {view === 'forgot_password'

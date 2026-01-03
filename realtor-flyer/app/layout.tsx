@@ -6,10 +6,10 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://agentflyers.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://www.realtorflyer.ca'),
   title: {
-    default: "AgentFlyers - AI Real Estate Flyer Generator for Canadian Realtors",
-    template: "%s | AgentFlyers",
+    default: "RealtorFlyer - AI Real Estate Flyer Generator for Canadian Realtors",
+    template: "%s | RealtorFlyer",
   },
   description: "Create professional property flyers in seconds using AI. Trusted by Canadian realtors. Free trial - no credit card required. Generate stunning MLS marketing flyers instantly.",
   keywords: [
@@ -24,18 +24,18 @@ export const metadata: Metadata = {
     "real estate marketing",
     "property flyer templates",
   ],
-  authors: [{ name: "AgentFlyers" }],
-  creator: "AgentFlyers",
+  authors: [{ name: "RealtorFlyer" }],
+  creator: "RealtorFlyer",
   openGraph: {
-    title: "AgentFlyers - AI Real Estate Flyer Generator",
+    title: "RealtorFlyer - AI Real Estate Flyer Generator",
     description: "Create professional property flyers in seconds using AI. No design skills needed.",
     locale: "en_CA",
     type: "website",
-    siteName: "AgentFlyers",
+    siteName: "RealtorFlyer",
   },
   twitter: {
     card: "summary_large_image",
-    title: "AgentFlyers - AI Real Estate Flyer Generator",
+    title: "RealtorFlyer - AI Real Estate Flyer Generator",
     description: "Create professional property flyers in seconds using AI.",
   },
   robots: {
