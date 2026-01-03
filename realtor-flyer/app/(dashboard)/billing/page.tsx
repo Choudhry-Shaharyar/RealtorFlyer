@@ -238,12 +238,17 @@ export default function BillingPage() {
 
                         {/* Renewal / Cancellation Date */}
                         {user.currentPeriodEnd && hasActiveSubscription && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <div className={`flex items-center gap-2 text-sm ${user.cancelAtPeriodEnd ? "text-amber-600" : "text-muted-foreground"}`}>
                                 <Calendar className="h-4 w-4" />
-                                <span>
-                                    {user.cancelAtPeriodEnd ? "Expires on " : "Renews on "}
-                                    {formatDate(user.currentPeriodEnd)}
-                                </span>
+                                {user.cancelAtPeriodEnd ? (
+                                    <span>
+                                        Your subscription will not renew. Access expires on {formatDate(user.currentPeriodEnd)}
+                                    </span>
+                                ) : (
+                                    <span>
+                                        Renews on {formatDate(user.currentPeriodEnd)}
+                                    </span>
+                                )}
                             </div>
                         )}
                     </CardContent>

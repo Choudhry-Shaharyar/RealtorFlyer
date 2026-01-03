@@ -127,8 +127,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
     }
 
+    // Check if subscription is set to cancel (consistent with handleSubscriptionUpdated)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cancelAtPeriodEnd = (subscription as any).cancel_at_period_end || false;
+    const subAny = subscription as any;
+    const cancelAtPeriodEnd = subAny.cancel_at_period_end === true || subAny.cancel_at !== null;
 
     console.log('[Stripe Webhook] Updating user in database...');
     const updatedUser = await prisma.user.update({
@@ -157,6 +159,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
 // Handle subscription updates (plan changes, etc.)
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     const customerId = subscription.customer as string;
+    console.log('[Stripe Webhook] handleSubscriptionUpdated called for customer:', customerId);
 
     // Find user by Stripe customer ID
     const user = await prisma.user.findFirst({
@@ -164,9 +167,12 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     });
 
     if (!user) {
-        console.error('User not found for customer:', customerId);
+        console.error('[Stripe Webhook] User not found for customer:', customerId);
+        console.error('[Stripe Webhook] Make sure stripeCustomerId is saved in database');
         return;
     }
+
+    console.log('[Stripe Webhook] Found user:', user.id, user.email);
 
     // Get the plan from the price ID
     const priceId = subscription.items.data[0]?.price?.id;
@@ -198,10 +204,22 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         periodEnd = Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
     }
 
+    // Check if subscription is set to cancel
+    // Stripe uses either cancel_at_period_end OR cancel_at depending on cancellation method
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cancelAtPeriodEnd = (subscription as any).cancel_at_period_end || false;
+    const subAny = subscription as any;
+    const cancelAtPeriodEnd = subAny.cancel_at_period_end === true || subAny.cancel_at !== null;
 
-    await prisma.user.update({
+    console.log('[Stripe Webhook] Subscription update data:', {
+        planType,
+        subscriptionStatus,
+        periodEnd: new Date(periodEnd * 1000).toISOString(),
+        cancelAtPeriodEnd,
+        rawCancelAtPeriodEnd: subAny.cancel_at_period_end,
+        rawCancelAt: subAny.cancel_at,
+    });
+
+    const updatedUser = await prisma.user.update({
         where: { id: user.id },
         data: {
             planType,
@@ -211,7 +229,11 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         },
     });
 
-    console.log(`Subscription updated for user ${user.id}: ${planType}, ${subscriptionStatus}`);
+    console.log(`[Stripe Webhook] Subscription updated for user ${user.id}:`, {
+        planType: updatedUser.planType,
+        subscriptionStatus: updatedUser.subscriptionStatus,
+        cancelAtPeriodEnd: updatedUser.cancelAtPeriodEnd,
+    });
 }
 
 // Handle subscription cancellation
