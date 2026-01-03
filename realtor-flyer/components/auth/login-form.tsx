@@ -106,7 +106,7 @@ export function LoginForm({ redirectPlan }: LoginFormProps) {
         const email = formData.get("email") as string
         const password = formData.get("password") as string
 
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         })
@@ -116,7 +116,20 @@ export function LoginForm({ redirectPlan }: LoginFormProps) {
                 description: parseSupabaseError(error),
             })
             setIsLoading(false)
-        } else {
+        } else if (data.user) {
+            // Debug: log the email_confirmed_at value
+            console.log('User email_confirmed_at:', data.user.email_confirmed_at)
+
+            // Check if email is verified
+            if (!data.user.email_confirmed_at) {
+                await supabase.auth.signOut()
+                toast.error("Email not verified", {
+                    description: "Please check your inbox and verify your email before signing in.",
+                })
+                setIsLoading(false)
+                return
+            }
+
             router.refresh()
             // If user selected a plan, redirect to billing with plan param
             if (redirectPlan) {

@@ -45,6 +45,16 @@ export default function LoginPage({
                             </p>
                         </div>
                     )}
+                    {searchParams.error === 'email_not_verified' && (
+                        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center text-sm">
+                            <p className="text-red-700 font-medium">
+                                ⚠️ Email not verified
+                            </p>
+                            <p className="text-red-600 text-xs mt-1">
+                                Please check your inbox and verify your email before signing in.
+                            </p>
+                        </div>
+                    )}
                     <Card className="border-none shadow-none">
                         <CardHeader className="text-center">
                             <CardTitle className="text-2xl font-bold text-brand-navy">

@@ -28,10 +28,13 @@ export async function GET(request: NextRequest) {
                 // Create or update user in database
                 await prisma.user.upsert({
                     where: { email: user.email },
-                    update: {},
+                    update: {
+                        emailVerified: new Date(), // Set emailVerified on confirmation
+                    },
                     create: {
                         email: user.email,
                         name: user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0],
+                        emailVerified: new Date(), // Also set on create
                         creditsRemaining: 3, // Default free credits
                         planType: 'free',
                     },

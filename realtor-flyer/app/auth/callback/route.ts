@@ -20,16 +20,28 @@ export async function GET(request: Request) {
             const { data: { user } } = await supabase.auth.getUser()
 
             if (user?.email) {
+                // Check if email is verified (skip for OAuth providers like Google which auto-verify)
+                const isOAuthProvider = user.app_metadata?.provider !== 'email'
+
+                if (!isOAuthProvider && !user.email_confirmed_at) {
+                    // Sign out unverified email users
+                    await supabase.auth.signOut()
+                    return NextResponse.redirect(`${origin}/login?error=email_not_verified`)
+                }
+
                 // Create or update user in database
                 await prisma.user.upsert({
                     where: { email: user.email },
                     update: {
                         // Update name from metadata if available
                         name: user.user_metadata?.full_name || user.user_metadata?.name || undefined,
+                        // Sync email verification status from Supabase
+                        emailVerified: user.email_confirmed_at ? new Date(user.email_confirmed_at) : undefined,
                     },
                     create: {
                         email: user.email,
                         name: user.user_metadata?.full_name || user.user_metadata?.name || user.email.split('@')[0],
+                        emailVerified: user.email_confirmed_at ? new Date(user.email_confirmed_at) : null,
                         creditsRemaining: 3, // Default free credits
                         planType: 'free',
                     },
