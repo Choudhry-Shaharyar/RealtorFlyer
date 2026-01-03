@@ -70,8 +70,26 @@ export async function POST(request: Request) {
         console.log('[Stripe Checkout] Database user ID:', dbUser.id);
 
         // 4. Get or create Stripe customer
+        // NOTE: We don't save stripeCustomerId until checkout succeeds (handled in webhook)
+        // This prevents stale customer IDs for users who abandon checkout
         let stripeCustomerId = dbUser.stripeCustomerId;
         console.log('[Stripe Checkout] Existing Stripe customer ID:', stripeCustomerId);
+
+        if (stripeCustomerId) {
+            // Verify the customer still exists in Stripe
+            try {
+                await stripe.customers.retrieve(stripeCustomerId);
+                console.log('[Stripe Checkout] Verified Stripe customer exists');
+            } catch {
+                // Customer doesn't exist anymore, clear it and create new
+                console.log('[Stripe Checkout] Stripe customer not found, will create new');
+                stripeCustomerId = null;
+                await prisma.user.update({
+                    where: { id: dbUser.id },
+                    data: { stripeCustomerId: null },
+                });
+            }
+        }
 
         if (!stripeCustomerId) {
             console.log('[Stripe Checkout] Creating new Stripe customer...');
@@ -86,13 +104,7 @@ export async function POST(request: Request) {
 
             stripeCustomerId = customer.id;
             console.log('[Stripe Checkout] Created Stripe customer:', stripeCustomerId);
-
-            // Save Stripe customer ID to database
-            await prisma.user.update({
-                where: { id: dbUser.id },
-                data: { stripeCustomerId: customer.id },
-            });
-            console.log('[Stripe Checkout] Saved Stripe customer ID to database');
+            // Don't save to database yet - webhook will save after successful payment
         }
 
         // 5. Create Checkout Session

@@ -101,8 +101,9 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const dbUserId = session.metadata?.db_user_id;
     const plan = session.metadata?.plan;
     const subscriptionId = session.subscription as string;
+    const customerId = session.customer as string;
 
-    console.log('[Stripe Webhook] Extracted data:', { dbUserId, plan, subscriptionId });
+    console.log('[Stripe Webhook] Extracted data:', { dbUserId, plan, subscriptionId, customerId });
 
     if (!dbUserId || !plan) {
         console.error('[Stripe Webhook] Missing metadata - dbUserId:', dbUserId, 'plan:', plan);
@@ -135,6 +136,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         data: {
             planType: plan,
             creditsRemaining: getCreditsForPlan(plan),
+            stripeCustomerId: customerId, // Save Stripe customer ID on successful checkout
             stripeSubscriptionId: subscriptionId,
             subscriptionStatus: 'active',
             currentPeriodEnd: new Date(periodEnd * 1000),
@@ -148,6 +150,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
         planType: updatedUser.planType,
         creditsRemaining: updatedUser.creditsRemaining,
         subscriptionStatus: updatedUser.subscriptionStatus,
+        stripeCustomerId: updatedUser.stripeCustomerId,
     });
 }
 
