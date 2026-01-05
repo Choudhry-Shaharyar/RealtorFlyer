@@ -27,16 +27,16 @@ export function Footer() {
                     <div>
                         <h4 className="font-semibold mb-4">Product</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
-                            <li><Link href="#features">Features</Link></li>
-                            <li><Link href="#pricing">Pricing</Link></li>
-                            <li><Link href="#examples">Examples</Link></li>
+                            <li><Link href="/#features">Features</Link></li>
+                            <li><Link href="/#pricing">Pricing</Link></li>
+                            <li><Link href="/#examples">Examples</Link></li>
                         </ul>
                     </div>
                     <div>
                         <h4 className="font-semibold mb-4">Company</h4>
                         <ul className="space-y-2 text-sm text-muted-foreground">
                             <li><Link href="#">About</Link></li>
-                            <li><Link href="#">Blog</Link></li>
+                            <li><Link href="/blog">Blog</Link></li>
                             <li><Link href="#">Contact</Link></li>
                         </ul>
                     </div>

@@ -1,9 +1,18 @@
 import { MetadataRoute } from 'next'
+import { getBlogPosts } from '@/lib/blog'
 
-export default function sitemap(): MetadataRoute.Sitemap {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.realtorflyer.ca'
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+    const posts = await getBlogPosts()
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://realtorflyer.ca'
 
-    return [
+    const blogEntries: MetadataRoute.Sitemap = posts.map((post) => ({
+        url: `${baseUrl}/blog/${post.slug}`,
+        lastModified: new Date(post.updatedAt || post.publishedAt),
+        changeFrequency: 'monthly',
+        priority: 0.7,
+    }))
+
+    const staticRoutes: MetadataRoute.Sitemap = [
         {
             url: baseUrl,
             lastModified: new Date(),
@@ -11,10 +20,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 1,
         },
         {
+            url: `${baseUrl}/blog`,
+            lastModified: new Date(),
+            changeFrequency: 'daily',
+            priority: 0.8,
+        },
+        {
             url: `${baseUrl}/login`,
             lastModified: new Date(),
             changeFrequency: 'monthly',
-            priority: 0.8,
+            priority: 0.5,
+        },
+        {
+            url: `${baseUrl}/pricing`, // Even if disabled, route might exist or redirect
+            lastModified: new Date(),
+            changeFrequency: 'monthly',
+            priority: 0.6,
         },
     ]
+
+    return [...staticRoutes, ...blogEntries]
 }

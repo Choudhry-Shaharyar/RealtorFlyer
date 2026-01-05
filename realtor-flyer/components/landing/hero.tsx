@@ -106,11 +106,11 @@ export function Hero() {
                             </Badge>
                         </div>
                         <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-brand-navy">
-                            Create Professional <br className="hidden md:inline" />
-                            Real Estate Flyers in <span className="text-brand-gold">Seconds</span>
+                            The <span className="text-brand-gold">AI</span> Real Estate <br className="hidden md:inline" />
+                            Flyer Generator
                         </h1>
                         <p className="text-xl text-muted-foreground max-w-[42rem] mx-auto">
-                            The AI-powered real estate flyer generator trusted by Canadian realtors. No design skills needed. Just enter the address and let AI do the rest.
+                            The #1 <strong>AI flyer generator for realtors</strong>. Create stunning property listing flyers, open house materials, and social media posts in seconds.
                         </p>
                     </motion.div>
                     <motion.div
