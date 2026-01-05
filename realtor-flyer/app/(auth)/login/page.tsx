@@ -29,7 +29,7 @@ export default function LoginPage({
                         <p className="text-lg">
                             &ldquo;RealtorFlyer has transformed how I market my listings. I can now generate professional open house flyers in minutes instead of hours.&rdquo;
                         </p>
-                        <footer className="text-sm">Sarah Jenkins, RE/MAX Top Producer</footer>
+                        <footer className="text-sm"></footer>
                     </blockquote>
                 </div>
             </div>
