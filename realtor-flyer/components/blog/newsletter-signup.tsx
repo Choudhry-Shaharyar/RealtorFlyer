@@ -10,15 +10,30 @@ export function NewsletterSignup() {
     const [email, setEmail] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+
+        try {
+            const response = await fetch("/api/newsletter", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, source: "blog" }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setEmail("");
+                toast.success(data.message || "Thanks for subscribing! Check your inbox soon.");
+            } else {
+                toast.error(data.error || "Failed to subscribe. Please try again.");
+            }
+        } catch (error) {
+            toast.error("Something went wrong. Please try again.");
+        } finally {
             setLoading(false);
-            setEmail("");
-            toast.success("Thanks for subscribing! Check your inbox soon.");
-        }, 1000);
+        }
     };
 
     return (

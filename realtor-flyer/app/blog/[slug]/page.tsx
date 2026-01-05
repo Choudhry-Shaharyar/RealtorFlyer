@@ -15,6 +15,7 @@ import { ShareButtons } from "@/components/blog/share-buttons";
 import { RelatedPosts } from "@/components/blog/related-posts";
 import { CallToAction } from "@/components/blog/call-to-action";
 import { ReadingProgress } from "@/components/blog/reading-progress";
+import { NewsletterSignup } from "@/components/blog/newsletter-signup";
 import { Badge } from "@/components/ui/badge";
 
 // Custom components available in MDX
@@ -195,6 +196,9 @@ export default async function BlogPostPage({ params }: PageProps) {
                         <div className="prose prose-lg max-w-none prose-headings:text-brand-navy prose-a:text-brand-navy prose-strong:text-brand-navy">
                             {post.content}
                         </div>
+
+                        {/* Newsletter Signup */}
+                        <NewsletterSignup />
 
                         {/* Related Posts */}
                         <RelatedPosts currentSlug={params.slug} category={post.meta.category} />

@@ -156,3 +156,12 @@ model GeneratedImage {
   @@index([userId])
   @@index([projectId])
 }
+
+model NewsletterSubscriber {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  source      String   @default("blog") // blog, landing, footer, etc.
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  isActive    Boolean  @default(true)
+}
