@@ -122,6 +122,7 @@ export function Pricing() {
                         recommended={true}
                         buttonText="Subscribe"
                         planId="starter"
+                        comingSoon={true}
                     />
                     <PricingCard
                         title="Pro"
@@ -131,6 +132,7 @@ export function Pricing() {
                         features={["100 flyers/month", "All templates", "No watermark", "HD downloads", "Priority support"]}
                         buttonText="Go Pro"
                         planId="pro"
+                        comingSoon={true}
                     />
                     {/* <PricingCard
                         title="Agency"

@@ -158,47 +158,81 @@ export async function generateFlyerImage(
 
     // Add property images
     if (params.propertyImages && params.propertyImages.length > 0) {
-        await Promise.all(params.propertyImages.map(async (imgData) => {
+        console.log(`Processing ${params.propertyImages.length} property images...`);
+        await Promise.all(params.propertyImages.map(async (imgData, index) => {
             let cleanBase64 = "";
+            let mimeType = "image/jpeg"; // default
 
             if (imgData.startsWith("http")) {
                 // It's a URL, fetch and convert
+                console.log(`Image ${index}: Fetching from URL...`);
                 cleanBase64 = await urlToBase64(imgData);
+                console.log(`Image ${index}: Base64 length after fetch: ${cleanBase64.length}`);
             } else {
                 // It's likely base64 (with or without header)
+                console.log(`Image ${index}: Processing data URL, length: ${imgData.length}`);
+                // Extract MIME type from data URL if present (e.g., "data:image/png;base64,xxx")
+                if (imgData.startsWith("data:")) {
+                    const matches = imgData.match(/^data:([^;]+);base64,/);
+                    if (matches && matches[1]) {
+                        mimeType = matches[1];
+                        console.log(`Image ${index}: Detected MIME type: ${mimeType}`);
+                    }
+                }
                 cleanBase64 = imgData.split(',').pop() || "";
+                console.log(`Image ${index}: Base64 length after extraction: ${cleanBase64.length}`);
             }
 
             if (cleanBase64) {
+                console.log(`Image ${index}: Adding to parts with mimeType: ${mimeType}, data length: ${cleanBase64.length}`);
                 parts.push({
                     inlineData: {
                         data: cleanBase64,
-                        mimeType: "image/jpeg"
+                        mimeType: mimeType
                     }
                 });
+            } else {
+                console.error(`Image ${index}: EMPTY base64 data! Skipping.`);
             }
         }));
     }
 
     // Add agent portrait if exists
     if (params.agentPortrait) {
+        console.log("Processing agent portrait...");
         let cleanBase64 = "";
+        let mimeType = "image/jpeg"; // default
 
         if (params.agentPortrait.startsWith("http")) {
             // It's a URL, fetch and convert
+            console.log("Agent portrait: Fetching from URL...");
             cleanBase64 = await urlToBase64(params.agentPortrait);
+            console.log(`Agent portrait: Base64 length after fetch: ${cleanBase64.length}`);
         } else {
             // It's likely base64
+            console.log(`Agent portrait: Processing data URL, length: ${params.agentPortrait.length}`);
+            // Extract MIME type from data URL if present (e.g., "data:image/png;base64,xxx")
+            if (params.agentPortrait.startsWith("data:")) {
+                const matches = params.agentPortrait.match(/^data:([^;]+);base64,/);
+                if (matches && matches[1]) {
+                    mimeType = matches[1];
+                    console.log(`Agent portrait: Detected MIME type: ${mimeType}`);
+                }
+            }
             cleanBase64 = params.agentPortrait.split(',').pop() || "";
+            console.log(`Agent portrait: Base64 length after extraction: ${cleanBase64.length}`);
         }
 
         if (cleanBase64) {
+            console.log(`Agent portrait: Adding to parts with mimeType: ${mimeType}, data length: ${cleanBase64.length}`);
             parts.push({
                 inlineData: {
                     data: cleanBase64,
-                    mimeType: "image/jpeg"
+                    mimeType: mimeType
                 }
             });
+        } else {
+            console.error("Agent portrait: EMPTY base64 data! Skipping.");
         }
     }
 
@@ -237,13 +271,18 @@ export async function generateFlyerImage(
 // Helper to convert URL to Base64
 async function urlToBase64(url: string): Promise<string> {
     try {
+        console.log(`urlToBase64: Fetching ${url}`);
         const response = await fetch(url);
+        console.log(`urlToBase64: Response status: ${response.status}`);
         if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
         const arrayBuffer = await response.arrayBuffer();
+        console.log(`urlToBase64: ArrayBuffer size: ${arrayBuffer.byteLength} bytes`);
         const buffer = Buffer.from(arrayBuffer);
-        return buffer.toString('base64');
+        const base64 = buffer.toString('base64');
+        console.log(`urlToBase64: Base64 length: ${base64.length}`);
+        return base64;
     } catch (error) {
-        console.error("Error converting URL to Base64:", error);
+        console.error("urlToBase64: Error converting URL to Base64:", error);
         return ""; // Return empty string on failure to avoid crashing, though arguably should throw
     }
 }

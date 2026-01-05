@@ -2,12 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/db";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Download, RefreshCw, Share2, Copy } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DownloadButton } from "@/components/projects/download-button";
-import { RegenerateButton } from "@/components/projects/regenerate-button";
 
 interface ProjectPageProps {
     params: { id: string };
@@ -84,7 +83,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                 mimeType={latestImage.mimeType}
                                 filename={`${project.listingType.toLowerCase().replace(" ", "-")}-flyer`}
                             />
-                            <RegenerateButton projectId={project.id} />
                         </div>
                     )}
                 </div>

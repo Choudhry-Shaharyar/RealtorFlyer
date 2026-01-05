@@ -28,7 +28,6 @@ export async function POST(
                 name: true,
                 phone: true,
                 companyName: true,
-                profilePhoto: true,
             },
         });
 
@@ -47,7 +46,7 @@ export async function POST(
             where: { id },
             include: {
                 projectImages: {
-                    orderBy: { uploadOrder: 'asc' },
+                    orderBy: { uploadOrder: "asc" },
                 },
             },
         });
@@ -56,47 +55,70 @@ export async function POST(
             return NextResponse.json({ error: "Project not found" }, { status: 404 });
         }
 
-        // Get property images - these are now URLs (or legacy base64)
-        // For Gemini, we need base64 data, so we need to fetch from URLs if they're storage URLs
-        const propertyImages: string[] = [];
-        for (const img of project.projectImages) {
-            if (img.imageUrl.startsWith('data:')) {
-                // Legacy base64 data
-                propertyImages.push(img.imageUrl);
-            } else if (img.imageUrl.startsWith('http')) {
-                // Storage URL - fetch and convert to base64
-                try {
-                    const response = await fetch(img.imageUrl);
-                    const buffer = await response.arrayBuffer();
-                    const base64 = Buffer.from(buffer).toString('base64');
-                    const mimeType = response.headers.get('content-type') || 'image/jpeg';
-                    propertyImages.push(`data:${mimeType};base64,${base64}`);
-                } catch (fetchError) {
-                    console.error(`Failed to fetch image ${img.imageUrl}:`, fetchError);
-                    // Skip this image
-                }
+        // Parse request body for edited parameters (optional)
+        let body: any = {};
+        try {
+            const text = await request.text();
+            if (text) {
+                body = JSON.parse(text);
             }
+        } catch {
+            // No body provided, use project defaults
         }
 
-        // Regenerate with same settings, including images
+        // Get existing property images from database if not in body
+        const existingPropertyImages = project.projectImages.map(img => img.imageUrl);
+
+        console.log(`Regenerate: Body has ${body.propertyImages?.length || 0} images`);
+        console.log(`Regenerate: Database has ${existingPropertyImages.length} images`);
+
+        // Build flyer parameters, preferring body values over project defaults
         const flyerParams: FlyerParams = {
-            listingType: project.listingType as FlyerParams["listingType"],
-            price: project.price || "0",
-            originalPrice: project.originalPrice || undefined,
-            bedrooms: project.bedrooms,
-            bathrooms: project.bathrooms,
-            squareFeet: project.squareFeet || undefined,
-            description: project.description || undefined,
-            propertyAddress: project.propertyAddress || undefined,
-            agentName: project.agentName || user.name || "Agent",
-            agentPhone: project.agentPhone || user.phone || "",
-            agentCompany: project.agentCompany || user.companyName || undefined,
-            agentPortrait: user.profilePhoto || undefined,
-            propertyImages: propertyImages.length > 0 ? propertyImages : undefined,
-            colorScheme: project.colorScheme as FlyerParams["colorScheme"],
-            style: project.style as FlyerParams["style"],
-            aspectRatio: project.aspectRatio as FlyerParams["aspectRatio"],
+            listingType: (body.listingType || project.listingType) as FlyerParams["listingType"],
+            price: body.price || project.price || "0",
+            originalPrice: body.originalPrice || project.originalPrice || undefined,
+            bedrooms: body.bedrooms ? parseInt(body.bedrooms) : project.bedrooms,
+            bathrooms: body.bathrooms ? parseFloat(body.bathrooms) : project.bathrooms,
+            squareFeet: body.squareFeet ? parseInt(body.squareFeet.replace(/,/g, "")) : (project.squareFeet || undefined),
+            description: body.description !== undefined ? body.description : (project.description || undefined),
+            propertyAddress: body.propertyAddress !== undefined ? body.propertyAddress : (project.propertyAddress || undefined),
+            agentName: body.agentName || project.agentName || user.name || "Agent",
+            agentPhone: body.agentPhone || project.agentPhone || user.phone || "",
+            agentCompany: body.agentCompany !== undefined ? body.agentCompany : (project.agentCompany || user.companyName || undefined),
+            // Use body images if provided, otherwise use existing project images
+            agentPortrait: body.agentPortrait || undefined,
+            propertyImages: body.propertyImages && body.propertyImages.length > 0
+                ? body.propertyImages
+                : (existingPropertyImages.length > 0 ? existingPropertyImages : undefined),
+            colorScheme: (body.colorScheme || project.colorScheme) as FlyerParams["colorScheme"],
+            style: (body.style || project.style) as FlyerParams["style"],
+            aspectRatio: (body.aspectRatio || project.aspectRatio) as FlyerParams["aspectRatio"],
         };
+
+        console.log(`Regenerate: Passing ${flyerParams.propertyImages?.length || 0} images to Gemini`);
+
+        // Update project with new values (if different)
+        if (Object.keys(body).length > 0) {
+            await prisma.project.update({
+                where: { id },
+                data: {
+                    listingType: flyerParams.listingType,
+                    price: flyerParams.price,
+                    originalPrice: flyerParams.originalPrice,
+                    bedrooms: flyerParams.bedrooms,
+                    bathrooms: flyerParams.bathrooms,
+                    squareFeet: flyerParams.squareFeet,
+                    description: flyerParams.description,
+                    propertyAddress: flyerParams.propertyAddress,
+                    agentName: flyerParams.agentName,
+                    agentPhone: flyerParams.agentPhone,
+                    agentCompany: flyerParams.agentCompany,
+                    colorScheme: flyerParams.colorScheme,
+                    style: flyerParams.style,
+                    aspectRatio: flyerParams.aspectRatio,
+                },
+            });
+        }
 
         const imageResult = await generateFlyerImage(flyerParams);
 
@@ -120,11 +142,7 @@ export async function POST(
                     projectId: project.id,
                     imageData: imageResult.base64,
                     mimeType: imageResult.mimeType,
-                    prompt: JSON.stringify({
-                        ...flyerParams,
-                        propertyImages: undefined,
-                        agentPortrait: undefined,
-                    }),
+                    prompt: JSON.stringify(flyerParams),
                 },
             });
 
@@ -146,11 +164,7 @@ export async function POST(
                 projectId: project.id,
                 url: imageUrl,
                 mimeType: imageResult.mimeType,
-                prompt: JSON.stringify({
-                    ...flyerParams,
-                    propertyImages: undefined,
-                    agentPortrait: undefined,
-                }),
+                prompt: JSON.stringify(flyerParams),
             },
         });
 

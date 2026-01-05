@@ -53,6 +53,9 @@ export const metadata: Metadata = {
     // Add your Google Search Console verification code here
     // google: 'your-verification-code',
   },
+  icons: {
+    icon: '/favicon.png',
+  },
 };
 
 export default function RootLayout({

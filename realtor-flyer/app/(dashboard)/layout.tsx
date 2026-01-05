@@ -65,9 +65,7 @@ export default async function DashboardLayout({
                     <div className="flex items-center justify-between h-16">
                         {/* Logo */}
                         <Link href="/dashboard" className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-brand-navy rounded-lg flex items-center justify-center">
-                                <span className="text-white font-bold text-sm">RF</span>
-                            </div>
+                            <img src="/logo.png" alt="RealtorFlyer" className="h-8 w-auto" />
                             <span className="font-semibold text-lg hidden sm:block">RealtorFlyer</span>
                         </Link>
 
