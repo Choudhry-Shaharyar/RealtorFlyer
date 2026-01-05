@@ -122,6 +122,7 @@ export async function POST(request: Request) {
             agentPortrait: agentPortrait || undefined,
             propertyImages: propertyImages || undefined, // Still pass base64 to Gemini for processing
             colorScheme: colorScheme as FlyerParams["colorScheme"],
+            customHex: body.customHex,
             style: style as FlyerParams["style"],
             aspectRatio: aspectRatio as FlyerParams["aspectRatio"],
         };

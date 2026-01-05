@@ -16,7 +16,8 @@ export interface FlyerParams {
     // Images are passed as base64 data
     propertyImages?: string[]; // Array of base64 strings
     agentPortrait?: string;    // Base64 string
-    colorScheme: "navy" | "black" | "green" | "burgundy";
+    colorScheme: "navy" | "black" | "green" | "burgundy" | "charcoal" | "purple" | "taupe" | "teal" | "custom";
+    customHex?: string;
     style: "modern" | "luxury" | "minimalist" | "classic";
     aspectRatio: "1:1" | "9:16" | "16:9" | "4:5";
 }
@@ -27,7 +28,15 @@ export function buildFlyerPrompt(params: FlyerParams): string {
         black: "elegant black with white text and silver accents",
         green: "forest green with cream text and gold accents",
         burgundy: "rich burgundy with ivory text and gold accents",
+        charcoal: "modern charcoal grey with white text and silver accents",
+        purple: "regal royal purple with white text and gold accents",
+        taupe: "warm brownish taupe earth tone with dark brown text",
+        teal: "deep modern teal with white text and gold accents",
     };
+
+    const colorInstruction = params.colorScheme === "custom" && params.customHex
+        ? `custom color scheme matching hex code ${params.customHex} with complementary text color`
+        : colors[params.colorScheme] || colors.navy;
 
     const styles: Record<string, string> = {
         modern: "clean modern layout, sans-serif fonts, lots of white space",
@@ -116,7 +125,7 @@ ${params.description ? `- "${params.description}"` : ""}
 ${params.propertyAddress ? `- Address: "${params.propertyAddress}"` : ""}
 
 DESIGN RULES:
-- Color scheme: ${colors[params.colorScheme]}
+- Color scheme: ${colorInstruction}
 - Style: ${styles[params.style]}
 - Aspect Ratio: ${params.aspectRatio}
 - Clean alignment and spacing

@@ -33,6 +33,10 @@ const COLOR_SCHEMES = [
     { value: "black", label: "Elegant Black", color: "#111827", accent: "#e5e7eb" },
     { value: "green", label: "Forest Green", color: "#166534", accent: "#fef3c7" },
     { value: "burgundy", label: "Burgundy", color: "#881337", accent: "#fef3c7" },
+    { value: "charcoal", label: "Charcoal", color: "#374151", accent: "#f3f4f6" },
+    { value: "purple", label: "Royal Purple", color: "#6b21a8", accent: "#f3e8ff" },
+    { value: "taupe", label: "Warm Taupe", color: "#a18c74", accent: "#3e2723" },
+    { value: "teal", label: "Modern Teal", color: "#0f766e", accent: "#f0fdfa" },
 ];
 
 const STYLES = [
@@ -87,6 +91,7 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
 
         // Step 5: Design
         colorScheme: "navy",
+        customHex: "#000000",
         style: "modern",
         aspectRatio: "1:1",
     });
@@ -490,7 +495,45 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                                                 </button>
                                             );
                                         })}
+
+                                        {/* Custom Color Option */}
+                                        <button
+                                            onClick={() => updateForm("colorScheme", "custom")}
+                                            className={`p-3 rounded-lg border-2 transition-all ${formData.colorScheme === "custom"
+                                                ? "border-brand-gold"
+                                                : "border-muted hover:border-brand-gold/50"
+                                                }`}
+                                        >
+                                            <div
+                                                className="w-full h-8 rounded mb-2 bg-gradient-to-r from-red-500 via-green-500 to-blue-500"
+                                            />
+                                            <div className="text-sm font-medium">Custom</div>
+                                        </button>
                                     </div>
+
+                                    {/* Custom Color Picker */}
+                                    {formData.colorScheme === "custom" && (
+                                        <div className="mt-4 p-4 border rounded-lg bg-muted/20 animate-in fade-in slide-in-from-top-2">
+                                            <Label htmlFor="customHex" className="mb-2 block">Select your custom brand color</Label>
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-10 w-10 rounded-full border shadow-sm overflow-hidden">
+                                                    <input
+                                                        type="color"
+                                                        id="customHex"
+                                                        value={formData.customHex}
+                                                        onChange={(e) => updateForm("customHex", e.target.value)}
+                                                        className="h-full w-full p-0 border-0 cursor-pointer scale-150"
+                                                    />
+                                                </div>
+                                                <Input
+                                                    value={formData.customHex}
+                                                    onChange={(e) => updateForm("customHex", e.target.value)}
+                                                    className="w-32 font-mono"
+                                                    placeholder="#000000"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Style */}
