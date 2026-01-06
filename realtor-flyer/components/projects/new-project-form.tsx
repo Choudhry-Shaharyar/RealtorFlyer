@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Home, DollarSign, TrendingDown, Calendar, Clock, Key,
-    ArrowLeft, ArrowRight, Loader2, Sparkles, Check
+    ArrowLeft, ArrowRight, Loader2, Sparkles, Check, TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,8 +81,15 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
         propertyAddress: "",
         price: "",
         originalPrice: "",
-        bedrooms: "3",
-        bathrooms: "2",
+        soldPrice: "", // Optional sold price for SOLD listings
+        soldOverAsking: false, // "Sold Over Asking" badge
+        openHouseDate: "", // Optional date for OPEN HOUSE
+        openHouseStartTime: "", // Start time (e.g., "2:00")
+        openHouseStartAmPm: "PM", // AM or PM
+        openHouseEndTime: "", // End time (e.g., "4:00")
+        openHouseEndAmPm: "PM", // AM or PM
+        bedrooms: "",
+        bathrooms: "",
         squareFeet: "",
         description: "",
 
@@ -174,11 +181,39 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                 updatedFormData.propertyImages = uploadedImages;
             }
 
-            // 5. Submit to API with URLs
+            // 5. Format open house date and time for API
+            let openHouseDate: string | undefined;
+            let openHouseTime: string | undefined;
+
+            if (formData.listingType === "OPEN HOUSE") {
+                // Format date to readable format (e.g., "January 15, 2026")
+                if (formData.openHouseDate) {
+                    const date = new Date(formData.openHouseDate + "T12:00:00");
+                    openHouseDate = date.toLocaleDateString("en-US", {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric"
+                    });
+                }
+
+                // Format time range (e.g., "2:00 PM - 4:00 PM")
+                if (formData.openHouseStartTime && formData.openHouseEndTime) {
+                    openHouseTime = `${formData.openHouseStartTime} ${formData.openHouseStartAmPm} - ${formData.openHouseEndTime} ${formData.openHouseEndAmPm}`;
+                } else if (formData.openHouseStartTime) {
+                    openHouseTime = `${formData.openHouseStartTime} ${formData.openHouseStartAmPm}`;
+                }
+            }
+
+            // 6. Submit to API with URLs
             const response = await fetch("/api/projects/generate", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updatedFormData),
+                body: JSON.stringify({
+                    ...updatedFormData,
+                    openHouseDate,
+                    openHouseTime,
+                }),
             });
 
             const data = await response.json();
@@ -203,8 +238,8 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                 // Agent Info
                 return !!formData.agentName && !!formData.agentPhone;
             case 3:
-                // Property Details
-                return !!formData.price && !!formData.bedrooms && !!formData.bathrooms;
+                // Property Details - all fields are now optional
+                return true;
             case 4:
                 // Property Images (Optional, so always allowed)
                 return true;
@@ -344,7 +379,7 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                             <CardContent className="space-y-6">
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="col-span-2">
-                                        <Label htmlFor="propertyAddress">Property Address (optional)</Label>
+                                        <Label htmlFor="propertyAddress">Property Address</Label>
                                         <div className="relative mt-1">
                                             <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -358,7 +393,7 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                                     </div>
 
                                     <div className="col-span-2">
-                                        <Label htmlFor="price">Listing Price *</Label>
+                                        <Label htmlFor="price">Listing Price</Label>
                                         <div className="relative mt-1">
                                             <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -387,8 +422,130 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                                         </div>
                                     )}
 
+                                    {/* SOLD Listing Options */}
+                                    {formData.listingType === "SOLD" && (
+                                        <>
+                                            <div className="col-span-2">
+                                                <Label htmlFor="soldPrice">Sold Price</Label>
+                                                <p className="text-xs text-muted-foreground mb-2">
+                                                    Leave empty if you don't want to display the sold price
+                                                </p>
+                                                <div className="relative">
+                                                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                                    <Input
+                                                        id="soldPrice"
+                                                        placeholder="475,000"
+                                                        value={formData.soldPrice}
+                                                        onChange={(e) => updateForm("soldPrice", e.target.value)}
+                                                        className="pl-10"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="col-span-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => updateForm("soldOverAsking", !formData.soldOverAsking)}
+                                                    className={`w-full flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${formData.soldOverAsking
+                                                        ? "border-green-500 bg-green-500/10"
+                                                        : "border-muted hover:border-green-500/50"
+                                                        }`}
+                                                >
+                                                    <div className={`flex items-center justify-center h-6 w-6 rounded-md ${formData.soldOverAsking
+                                                        ? "bg-green-500 text-white"
+                                                        : "bg-muted"
+                                                        }`}>
+                                                        {formData.soldOverAsking && <Check className="h-4 w-4" />}
+                                                    </div>
+                                                    <div className="flex-1 text-left">
+                                                        <div className="flex items-center gap-2">
+                                                            <TrendingUp className={`h-4 w-4 ${formData.soldOverAsking ? "text-green-500" : "text-muted-foreground"}`} />
+                                                            <span className="font-medium">Sold Over Asking</span>
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground mt-1">
+                                                            Add a "SOLD OVER ASKING" badge to highlight this achievement
+                                                        </p>
+                                                    </div>
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* OPEN HOUSE Listing Options */}
+                                    {formData.listingType === "OPEN HOUSE" && (
+                                        <>
+                                            <div className="col-span-2">
+                                                <Label htmlFor="openHouseDate">Open House Date</Label>
+                                                <p className="text-xs text-muted-foreground mb-2">
+                                                    Select the date of your open house event
+                                                </p>
+                                                <Input
+                                                    id="openHouseDate"
+                                                    type="date"
+                                                    value={formData.openHouseDate}
+                                                    onChange={(e) => updateForm("openHouseDate", e.target.value)}
+                                                    className="w-full"
+                                                />
+                                            </div>
+
+                                            <div className="col-span-2">
+                                                <Label>Open House Time</Label>
+                                                <p className="text-xs text-muted-foreground mb-2">
+                                                    Set start and end times for the open house
+                                                </p>
+                                                <div className="flex flex-wrap items-center gap-2">
+                                                    {/* Start Time */}
+                                                    <div className="flex items-center gap-1">
+                                                        <select
+                                                            value={formData.openHouseStartTime}
+                                                            onChange={(e) => updateForm("openHouseStartTime", e.target.value)}
+                                                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                        >
+                                                            <option value="">Start</option>
+                                                            {["12:00", "12:30", "1:00", "1:30", "2:00", "2:30", "3:00", "3:30", "4:00", "4:30", "5:00", "5:30", "6:00", "6:30", "7:00", "7:30", "8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30"].map((time) => (
+                                                                <option key={`start-${time}`} value={time}>{time}</option>
+                                                            ))}
+                                                        </select>
+                                                        <select
+                                                            value={formData.openHouseStartAmPm}
+                                                            onChange={(e) => updateForm("openHouseStartAmPm", e.target.value)}
+                                                            className="h-10 rounded-md border border-input bg-background px-2 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                        >
+                                                            <option value="AM">AM</option>
+                                                            <option value="PM">PM</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <span className="text-muted-foreground">to</span>
+
+                                                    {/* End Time */}
+                                                    <div className="flex items-center gap-1">
+                                                        <select
+                                                            value={formData.openHouseEndTime}
+                                                            onChange={(e) => updateForm("openHouseEndTime", e.target.value)}
+                                                            className="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                        >
+                                                            <option value="">End</option>
+                                                            {["12:00", "12:30", "1:00", "1:30", "2:00", "2:30", "3:00", "3:30", "4:00", "4:30", "5:00", "5:30", "6:00", "6:30", "7:00", "7:30", "8:00", "8:30", "9:00", "9:30", "10:00", "10:30", "11:00", "11:30"].map((time) => (
+                                                                <option key={`end-${time}`} value={time}>{time}</option>
+                                                            ))}
+                                                        </select>
+                                                        <select
+                                                            value={formData.openHouseEndAmPm}
+                                                            onChange={(e) => updateForm("openHouseEndAmPm", e.target.value)}
+                                                            className="h-10 rounded-md border border-input bg-background px-2 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                        >
+                                                            <option value="AM">AM</option>
+                                                            <option value="PM">PM</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
+
                                     <div>
-                                        <Label htmlFor="bedrooms">Bedrooms *</Label>
+                                        <Label htmlFor="bedrooms">Bedrooms</Label>
                                         <Input
                                             id="bedrooms"
                                             type="number"
@@ -397,11 +554,12 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                                             value={formData.bedrooms}
                                             onChange={(e) => updateForm("bedrooms", e.target.value)}
                                             className="mt-1"
+                                            placeholder="3"
                                         />
                                     </div>
 
                                     <div>
-                                        <Label htmlFor="bathrooms">Bathrooms *</Label>
+                                        <Label htmlFor="bathrooms">Bathrooms</Label>
                                         <Input
                                             id="bathrooms"
                                             type="number"
@@ -411,11 +569,12 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                                             value={formData.bathrooms}
                                             onChange={(e) => updateForm("bathrooms", e.target.value)}
                                             className="mt-1"
+                                            placeholder="2"
                                         />
                                     </div>
 
                                     <div className="col-span-2">
-                                        <Label htmlFor="squareFeet">Square Feet (optional)</Label>
+                                        <Label htmlFor="squareFeet">Square Feet</Label>
                                         <Input
                                             id="squareFeet"
                                             placeholder="2,500"
@@ -426,7 +585,7 @@ export function NewProjectForm({ initialAgentData }: NewProjectFormProps) {
                                     </div>
 
                                     <div className="col-span-2">
-                                        <Label htmlFor="description">Tagline (optional)</Label>
+                                        <Label htmlFor="description">Tagline</Label>
                                         <Textarea
                                             id="description"
                                             placeholder="Charming home in a quiet neighborhood. Don't miss this opportunity!"

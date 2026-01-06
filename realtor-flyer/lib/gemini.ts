@@ -3,10 +3,14 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 // Export parameters interface
 export interface FlyerParams {
     listingType: "FOR SALE" | "FOR LEASE" | "SOLD" | "OPEN HOUSE" | "COMING SOON" | "PRICE REDUCTION";
-    price: string;
+    price?: string; // Optional listing price
     originalPrice?: string;
-    bedrooms: number;
-    bathrooms: number;
+    soldPrice?: string; // Optional sold price for SOLD listings
+    soldOverAsking?: boolean; // Show "SOLD OVER ASKING" badge
+    openHouseDate?: string; // Optional date for OPEN HOUSE (e.g., "January 15, 2026")
+    openHouseTime?: string; // Optional time for OPEN HOUSE (e.g., "2:00 PM - 4:00 PM")
+    bedrooms?: number; // Optional bedroom count
+    bathrooms?: number; // Optional bathroom count
     squareFeet?: number;
     propertyAddress?: string;
     description?: string;
@@ -45,10 +49,20 @@ export function buildFlyerPrompt(params: FlyerParams): string {
         classic: "classic professional real estate layout, balanced typography",
     };
 
-    const priceBlock =
-        params.listingType === "PRICE REDUCTION" && params.originalPrice
-            ? `Show original price "$${params.originalPrice}" with a strikethrough, then new price "$${params.price}" larger below`
-            : `Display the price "$${params.price}" prominently`;
+    let priceBlock = params.price ? `Display the price "$${params.price}" prominently` : "";
+
+    if (params.listingType === "PRICE REDUCTION" && params.originalPrice && params.price) {
+        priceBlock = `Show original price "$${params.originalPrice}" with a strikethrough, then new price "$${params.price}" larger below`;
+    } else if (params.listingType === "SOLD") {
+        if (params.soldPrice) {
+            priceBlock = `Display the sold price "$${params.soldPrice}" prominently with "SOLD" label`;
+        } else {
+            priceBlock = `Display "SOLD" prominently without showing a specific price`;
+        }
+        if (params.soldOverAsking) {
+            priceBlock += `. Include a prominent "SOLD OVER ASKING" badge or banner in an eye-catching accent color`;
+        }
+    }
 
     const imageCount = params.propertyImages?.length || 0;
 
@@ -118,11 +132,18 @@ ${params.agentCompany ? `- Company: "${params.agentCompany}"` : ""}
 
 PROPERTY DETAILS:
 - Listing Type: "${params.listingType}"
-- Price: ${priceBlock}
-- "${params.bedrooms} Bedrooms / ${params.bathrooms} Bathrooms"
+${priceBlock ? `- Price: ${priceBlock}` : ""}
+${(params.bedrooms !== undefined && params.bathrooms !== undefined) ? `- "${params.bedrooms} Bedrooms / ${params.bathrooms} Bathrooms"` : ""}
+${(params.bedrooms !== undefined && params.bathrooms === undefined) ? `- "${params.bedrooms} Bedrooms"` : ""}
+${(params.bedrooms === undefined && params.bathrooms !== undefined) ? `- "${params.bathrooms} Bathrooms"` : ""}
 ${params.squareFeet ? `- "${params.squareFeet.toLocaleString()} sq ft"` : ""}
 ${params.description ? `- "${params.description}"` : ""}
 ${params.propertyAddress ? `- Address: "${params.propertyAddress}"` : ""}
+${params.listingType === "OPEN HOUSE" && (params.openHouseDate || params.openHouseTime) ? `
+OPEN HOUSE EVENT:
+${params.openHouseDate ? `- Date: "${params.openHouseDate}" - Display prominently on the flyer` : ""}
+${params.openHouseTime ? `- Time: "${params.openHouseTime}" - Display prominently on the flyer` : ""}
+- Create a visually distinct section highlighting the open house date and time` : ""}
 
 DESIGN RULES:
 - Color scheme: ${colorInstruction}

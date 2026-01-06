@@ -39,6 +39,10 @@ export async function POST(request: Request) {
             listingType,
             price,
             originalPrice,
+            soldPrice, // Optional: sold price for SOLD listings
+            soldOverAsking, // Optional: boolean for "Sold Over Asking" badge
+            openHouseDate, // Optional: formatted date for OPEN HOUSE
+            openHouseTime, // Optional: formatted time for OPEN HOUSE
             bedrooms,
             bathrooms,
             squareFeet,
@@ -53,8 +57,8 @@ export async function POST(request: Request) {
             aspectRatio,
         } = body;
 
-        // 4. Validate required fields
-        if (!listingType || !price || !bedrooms || !bathrooms || !agentName || !agentPhone) {
+        // 4. Validate required fields (only listing type and agent info required)
+        if (!listingType || !agentName || !agentPhone) {
             return NextResponse.json(
                 { error: "Missing required fields" },
                 { status: 400 }
@@ -65,12 +69,12 @@ export async function POST(request: Request) {
         const project = await prisma.project.create({
             data: {
                 userId: user.id,
-                name: `${listingType} - $${price}`,
+                name: `${listingType}${price ? ` - $${price}` : ""}`,
                 listingType,
-                price,
+                price: price || null,
                 originalPrice: originalPrice || null,
-                bedrooms: parseInt(bedrooms),
-                bathrooms: parseFloat(bathrooms),
+                bedrooms: bedrooms ? parseInt(bedrooms) : 0,
+                bathrooms: bathrooms ? parseFloat(bathrooms) : 0,
                 squareFeet: squareFeet ? parseInt(squareFeet.replace(/,/g, "")) : null,
                 description: description || null,
                 propertyAddress: body.propertyAddress || null,
@@ -109,10 +113,14 @@ export async function POST(request: Request) {
         // 7. Generate image with Gemini
         const flyerParams: FlyerParams = {
             listingType: listingType as FlyerParams["listingType"],
-            price,
+            price: price || undefined,
             originalPrice: originalPrice || undefined,
-            bedrooms: parseInt(bedrooms),
-            bathrooms: parseFloat(bathrooms),
+            soldPrice: soldPrice || undefined,
+            soldOverAsking: soldOverAsking || false,
+            openHouseDate: openHouseDate || undefined,
+            openHouseTime: openHouseTime || undefined,
+            bedrooms: bedrooms ? parseInt(bedrooms) : undefined,
+            bathrooms: bathrooms ? parseFloat(bathrooms) : undefined,
             squareFeet: squareFeet ? parseInt(squareFeet.replace(/,/g, "")) : undefined,
             description: description || undefined,
             propertyAddress: body.propertyAddress,
